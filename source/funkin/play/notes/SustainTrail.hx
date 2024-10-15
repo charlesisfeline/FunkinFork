@@ -219,8 +219,7 @@ class SustainTrail extends FlxSprite
       return;
     }
 
-    var clipHeight:Float = FlxMath.bound(sustainHeight(sustainLength - (songTime + Conductor.instance.inputOffset - strumTime),
-      parentStrumline?.scrollSpeed ?? 1.0), 0, graphicHeight);
+    var clipHeight:Float = FlxMath.bound(sustainHeight(sustainLength - (songTime - strumTime), parentStrumline?.scrollSpeed ?? 1.0), 0, graphicHeight);
     if (clipHeight <= 0.1)
     {
       visible = false;
