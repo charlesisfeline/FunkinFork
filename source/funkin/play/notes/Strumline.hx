@@ -403,7 +403,8 @@ class Strumline extends FlxSpriteGroup
         }
       }
 
-      var renderWindowEnd = holdNote.strumTime + holdNote.fullSustainLength + Constants.HIT_WINDOW_MS + RENDER_DISTANCE_MS / 8;
+      var renderWindowEnd = holdNote.strumTime - conductorInUse.inputOffset + holdNote.fullSustainLength
+        + Constants.HIT_WINDOW_MS + RENDER_DISTANCE_MS / 8;
 
       if (holdNote.missedNote && conductorInUse.songPosition >= renderWindowEnd)
       {
@@ -650,7 +651,7 @@ class Strumline extends FlxSpriteGroup
       note.holdNoteSprite.missedNote = false;
 
       note.holdNoteSprite.sustainLength = (note.holdNoteSprite.strumTime + note.holdNoteSprite.fullSustainLength)
-        - (conductorInUse.songPosition + conductorInUse.inputOffset);
+        - (conductorInUse.songPosition - conductorInUse.inputOffset);
     }
 
     #if FEATURE_GHOST_TAPPING
