@@ -466,7 +466,7 @@ class GameOverSubState extends MusicBeatSubState
     var musicPath:Null<String> = resolveMusicPath(musicSuffix, isStarting, isEnding);
     var onComplete:() -> Void = () -> {};
 
-    if (gameOverSfx != null) destroyGameOverSfx();
+    if (gameOverSfx != null && isEnding) destroyGameOverSfx();
 
     if (isStarting)
     {
