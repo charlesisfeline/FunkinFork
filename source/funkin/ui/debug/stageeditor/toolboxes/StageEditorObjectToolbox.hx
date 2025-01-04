@@ -86,6 +86,8 @@ class StageEditorObjectToolbox extends StageEditorDefaultToolbox
 
   var objectMiscAntialias:CheckBox;
   var objectMiscAntialiasReset:Button;
+  var objectMiscFlipX:CheckBox;
+  var objectMiscFlipY:CheckBox;
   var objectMiscFlipReset:Button;
   var objectMiscBlendDrop:DropDown;
   var objectMiscBlendReset:Button;
@@ -404,6 +406,14 @@ class StageEditorObjectToolbox extends StageEditorDefaultToolbox
       if (linkedObject != null) linkedObject.antialiasing = objectMiscAntialias.selected;
     }
 
+    objectMiscFlipX.onChange = function(_) {
+      if (linkedObject != null) linkedObject.flipX = objectMiscFlipX.selected;
+    }
+
+    objectMiscFlipY.onChange = function(_) {
+      if (linkedObject != null) linkedObject.flipY = objectMiscFlipY.selected;
+    }
+
     objectMiscBlendDrop.onChange = function(_) {
       if (linkedObject != null)
         linkedObject.blend = objectMiscBlendDrop.selectedItem.text == "NONE" ? null : AssetDataHandler.blendFromString(objectMiscBlendDrop.selectedItem.text);
@@ -474,6 +484,10 @@ class StageEditorObjectToolbox extends StageEditorDefaultToolbox
       if (linkedObject != null) objectMiscAntialias.selected = true;
     }
 
+    objectMiscFlipReset.onClick = function(_) {
+      if (linkedObject != null) objectMiscFlipX.selected = objectMiscFlipY.selected = false;
+    }
+
     objectMiscBlendReset.onClick = function(_) {
       if (linkedObject != null) objectMiscBlendDrop.selectedItem = "NORMAL";
     }
@@ -526,6 +540,8 @@ class StageEditorObjectToolbox extends StageEditorDefaultToolbox
     if (objectScrollXSlider.pos != linkedObject.scrollFactor.x) objectScrollXSlider.pos = linkedObject.scrollFactor.x;
     if (objectScrollYSlider.pos != linkedObject.scrollFactor.y) objectScrollYSlider.pos = linkedObject.scrollFactor.y;
     if (objectMiscAntialias.selected != linkedObject.antialiasing) objectMiscAntialias.selected = linkedObject.antialiasing;
+    if (objectMiscFlipX.selected != linkedObject.flipX) objectMiscFlipX.selected = linkedObject.flipX;
+    if (objectMiscFlipY.selected != linkedObject.flipY) objectMiscFlipY.selected = linkedObject.flipY;
 
     if (objectMiscColor.currentColor != Color.fromString(linkedObject.color.toHexString() ?? "white"))
       objectMiscColor.currentColor = Color.fromString(linkedObject.color.toHexString());
