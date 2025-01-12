@@ -618,6 +618,11 @@ class StageEditorState extends UIState
 
     if (moveMode == "assets")
     {
+      if (selectedSprite != null && !FlxG.mouse.overlaps(selectedSprite) && FlxG.mouse.justPressed && !isCursorOverHaxeUI)
+      {
+        selectedSprite = null;
+      }
+
       for (spr in spriteArray)
       {
         if (FlxG.mouse.overlaps(spr))
