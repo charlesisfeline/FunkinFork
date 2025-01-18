@@ -984,6 +984,11 @@ class FileUtilSandboxed
       path = path.substring(1);
     }
 
+    for (char in INVALID_CHARS)
+    {
+      path = path.replace(char, '');
+    }
+
     var parts:Array<String> = path.split('/');
     var sanitized:Array<String> = [];
     for (part in parts)
@@ -1019,6 +1024,11 @@ class FileUtilSandboxed
     'libvlccore.dll',
     'lime.ndll'
   ];
+
+  /**
+   * Characters which are invalid in the file system.
+   */
+  private static final INVALID_CHARS:Array<String> = [':', '*', '?', '"', '<', '>', '|'];
 
   /**
    * Check against protected paths.
