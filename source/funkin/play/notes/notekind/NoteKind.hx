@@ -79,6 +79,8 @@ abstract NoteKindParamType(String) from String to String
 
   public static final INT:String = 'Int';
 
+  public static final BOOL:String = 'Bool';
+
   public static final FLOAT:String = 'Float';
 }
 
@@ -113,6 +115,8 @@ typedef NoteKindParamData =
 typedef NoteKindParam =
 {
   name:String,
+  noanimation:Bool,
+  suffix:String,
   description:String,
   type:NoteKindParamType,
   ?data:NoteKindParamData
