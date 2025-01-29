@@ -62,7 +62,7 @@ class DebugMenuSubState extends MusicBeatSubState
     createItem("STAGE EDITOR", openStageEditor);
     #end
     // createItem("Input Offset Testing", openInputOffsetTesting);
-    // createItem("CHARACTER SELECT", openCharSelect, true);
+    createItem("CHARACTER SELECT", openCharSelect, true);
     // createItem("TEST STICKERS", testStickers);
     #if sys
     createItem("OPEN CRASH LOG FOLDER", openLogFolder);
