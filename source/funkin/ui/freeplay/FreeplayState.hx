@@ -1664,6 +1664,11 @@ class FreeplayState extends MusicBeatSubState
     {
       grpCapsules.members[curSelected].onConfirm();
     }
+
+    if (FlxG.keys.pressed.R)
+    {
+      moveToResultsScreen();
+    }
   }
 
   override function beatHit():Bool
@@ -2132,6 +2137,55 @@ class FreeplayState extends MusicBeatSubState
     result.persistentUpdate = false;
     result.persistentDraw = true;
     return result;
+  }
+
+  // I hope this works - Lasercar
+
+  @:nullSafety(Off) // This shouldn't cause any issues, right?
+  function moveToResultsScreen():Void
+  {
+    var save = Save.instance;
+    var song = save.getSongScore(rememberedSongId, currentDifficulty);
+    if (song != null)
+    {
+      // Ok, so there's actually a score for this song on this difficulty
+      var songEntry = SongRegistry.instance.fetchEntry(rememberedSongId);
+      var songName = songEntry.songName;
+      var songArtist = songEntry.songArtist;
+      var songScore = song.score;
+      // persistentUpdate = false;
+
+      var talliesToUse = song.tallies;
+
+      var res:funkin.play.ResultState = new funkin.play.ResultState(
+        {
+          storyMode: false,
+          songId: rememberedSongId,
+          difficultyId: currentDifficulty,
+          characterId: rememberedCharacterId,
+          title: ('${songName} by ${songArtist}'),
+          prevScoreData: song,
+          scoreData:
+            {
+              score: songScore,
+              tallies:
+                {
+                  sick: talliesToUse.sick,
+                  good: talliesToUse.good,
+                  bad: talliesToUse.bad,
+                  shit: talliesToUse.shit,
+                  missed: talliesToUse.missed,
+                  combo: talliesToUse.combo,
+                  maxCombo: talliesToUse.maxCombo,
+                  totalNotesHit: talliesToUse.totalNotesHit,
+                  totalNotes: talliesToUse.totalNotes,
+                },
+            },
+          isNewHighscore: false
+        });
+      // this.persistentDraw = false;
+      openSubState(res);
+    }
   }
 }
 
