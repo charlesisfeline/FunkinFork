@@ -2139,8 +2139,6 @@ class FreeplayState extends MusicBeatSubState
     return result;
   }
 
-  // I hope this works - Lasercar
-
   @:nullSafety(Off) // This shouldn't cause any issues, right?
   function moveToResultsScreen():Void
   {
