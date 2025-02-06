@@ -50,7 +50,6 @@ class NoteKindManager
       var noteEvent:NoteScriptEvent = cast(event, NoteScriptEvent);
 
       var noteKind:NoteKind = noteKinds.get(noteEvent.note.kind);
-      trace(noteKind.noanim);
 
       if (noteKind != null)
       {

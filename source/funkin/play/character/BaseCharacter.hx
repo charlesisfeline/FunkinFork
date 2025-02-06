@@ -49,6 +49,11 @@ class BaseCharacter extends Bopper
   public var debug:Bool = false;
 
   /**
+   * so this is for note hit notekind detection
+   */
+  public var curNoteKind:NoteKind;
+
+  /**
    * This character plays a given animation when hitting these specific combo numbers.
    */
   public var comboNoteCounts(default, null):Array<Int>;
