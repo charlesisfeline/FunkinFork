@@ -508,45 +508,64 @@ class BaseCharacter extends Bopper
    * Every time a note is hit, check if the note is from the same strumline.
    * If it is, then play the sing animation.
    */
+  /**
+   * Every time a note is hit, check if the note is from the same strumline.
+   * If it is, then play the sing animation.
+   */
   public override function onNoteHit(event:HitNoteScriptEvent)
   {
     super.onNoteHit(event);
-
     // If another script cancelled the event, don't do anything.
     if (event.eventCanceled) return;
+    curNoteKind = NoteKindManager.getNoteKind(event.note.noteData.kind);
 
-    if (event.note.noteData.getMustHitNote() && characterType == BF && event.note.noteData.kind != 'noanim')
+    if (event.note.noteData.getMustHitNote() && characterType == BF)
     {
-      // If the note is from the same strumline, play the sing animation.
-      if (event.note.noteData.params.noanimation == false)
+      if (curNoteKind != null)
       {
-        if (event.note.noteData.params.suffix != null)
+        if (curNoteKind.noanim == false)
         {
-          this.playSingAnimation(event.note.noteData.getDirection(), false, event.note.noteData.params.suffix);
-        }
-        else
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false);
+          if (curNoteKind.suffix != '')
+          {
+            this.playSingAnimation(event.note.noteData.getDirection(), false, curNoteKind.suffix);
+            holdTimer = 0;
+          }
+          else
+          {
+            this.playSingAnimation(event.note.noteData.getDirection(), false);
+            holdTimer = 0;
+          }
         }
       }
-
-      holdTimer = 0;
+      else
+      {
+        this.playSingAnimation(event.note.noteData.getDirection(), false);
+        holdTimer = 0;
+      }
     }
-    else if (!event.note.noteData.getMustHitNote() && characterType == DAD && event.note.noteData.kind != 'noanim')
+    else if (!event.note.noteData.getMustHitNote() && characterType == DAD)
     {
-      // If the note is from the same strumline, play the sing animation.
-      if (event.note.noteData.params.noanimation == false)
+      if (curNoteKind != null)
       {
-        if (event.note.noteData.params.suffix != null)
+        if (NoteKindManager.getNoteKindanimtype(event.note.noteData.kind) == false)
         {
-          this.playSingAnimation(event.note.noteData.getDirection(), false, event.note.noteData.params.suffix);
-        }
-        else
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false);
+          if (NoteKindManager.getNoteKindsuffix(event.note.noteData.kind) != '')
+          {
+            this.playSingAnimation(event.note.noteData.getDirection(), false, curNoteKind.suffix);
+            holdTimer = 0;
+          }
+          else
+          {
+            this.playSingAnimation(event.note.noteData.getDirection(), false);
+            holdTimer = 0;
+          }
         }
       }
-      holdTimer = 0;
+      else
+      {
+        this.playSingAnimation(event.note.noteData.getDirection(), false);
+        holdTimer = 0;
+      }
     }
     else if (characterType == GF && event.note.noteData.getMustHitNote())
     {
