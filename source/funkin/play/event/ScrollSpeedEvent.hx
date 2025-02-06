@@ -112,7 +112,7 @@ class ScrollSpeedEvent extends SongEvent
         name: 'scroll',
         title: 'Target Value',
         defaultValue: 1.0,
-        min: 0.1, // Please don't actually set the scroll speed to zero (or worse, a *negative* number) - Lasercar
+        min: 0.1, // Please don't actually set the scroll speed to zero (or worse, a *negative* number)
         step: 0.1,
         type: SongEventFieldType.FLOAT,
         units: 'x'
