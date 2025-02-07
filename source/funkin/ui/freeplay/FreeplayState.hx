@@ -54,6 +54,7 @@ import funkin.util.SortUtil;
 import openfl.display.BlendMode;
 import funkin.data.freeplay.style.FreeplayStyleRegistry;
 import funkin.data.song.SongData.SongMusicData;
+import funkin.ui.debug.charting.ChartEditorState;
 #if FEATURE_DISCORD_RPC
 import funkin.api.discord.DiscordClient;
 #end
