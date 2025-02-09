@@ -528,7 +528,7 @@ class BaseCharacter extends Bopper
     {
       if (curNoteKind != null)
       {
-        if (curNoteKind.noanim == false)
+        if (!curNoteKind.noanim)
         {
           if (curNoteKind.suffix != '')
           {
