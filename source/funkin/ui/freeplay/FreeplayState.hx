@@ -54,6 +54,7 @@ import funkin.util.SortUtil;
 import openfl.display.BlendMode;
 import funkin.data.freeplay.style.FreeplayStyleRegistry;
 import funkin.data.song.SongData.SongMusicData;
+import funkin.ui.debug.charting.ChartEditorState;
 #if FEATURE_DISCORD_RPC
 import funkin.api.discord.DiscordClient;
 #end
@@ -1707,6 +1708,19 @@ class FreeplayState extends MusicBeatSubState
     {
       busy = true;
       moveToResultsScreen();
+    }
+
+    if (controls.DEBUG_CHART && !busy)
+    {
+      /*
+        Doing it this way rather than passing the rememberedSongId
+        so that in the future, this can be made to load a random song when given this
+       */
+      var targetSong = grpCapsules.members[curSelected]?.freeplayData?.data.id ?? 'unknown';
+      FlxG.switchState(() -> new ChartEditorState(
+        {
+          targetSongId: targetSong,
+        }));
     }
   }
 
