@@ -757,10 +757,10 @@ class PlayState extends MusicBeatSubState
     rightWatermarkText.cameras = [camHUD];
 
     // Initialize some debug stuff.
-    #if FEATURE_DEBUG_FUNCTIONS
     // Display the version number (and git commit hash) in the bottom right corner.
     this.rightWatermarkText.text = Constants.VERSION;
 
+    #if FEATURE_DEBUG_FUNCTIONS
     FlxG.console.registerObject('playState', this);
     #end
 
