@@ -11,7 +11,6 @@ import funkin.play.notes.notekind.NoteKindManager;
 import funkin.data.song.SongRegistry;
 import funkin.data.freeplay.player.PlayerRegistry;
 import funkin.data.stage.StageRegistry;
-import funkin.data.stickers.StickerRegistry;
 import funkin.data.freeplay.album.AlbumRegistry;
 import funkin.modding.module.ModuleHandler;
 import funkin.play.character.CharacterData.CharacterDataParser;
@@ -348,19 +347,8 @@ class PolymodHandler
   {
     return {
       assetLibraryPaths: [
-        'default' => 'preload',
-        'shared' => 'shared',
-        'songs' => 'songs',
-        'videos' => 'videos',
-        'tutorial' => 'tutorial',
-        'week1' => 'week1',
-        'week2' => 'week2',
-        'week3' => 'week3',
-        'week4' => 'week4',
-        'week5' => 'week5',
-        'week6' => 'week6',
-        'week7' => 'week7',
-        'weekend1' => 'weekend1',
+        'default' => 'preload', 'shared' => 'shared', 'songs' => 'songs', 'videos' => 'videos', 'tutorial' => 'tutorial', 'week1' => 'week1',
+        'week2' => 'week2', 'week3' => 'week3', 'week4' => 'week4', 'week5' => 'week5', 'week6' => 'week6', 'week7' => 'week7', 'weekend1' => 'weekend1',
       ],
       coreAssetRedirect: CORE_FOLDER,
     }
@@ -466,7 +454,6 @@ class PolymodHandler
     SpeakerRegistry.instance.loadEntries();
     AlbumRegistry.instance.loadEntries();
     StageRegistry.instance.loadEntries();
-    StickerRegistry.instance.loadEntries();
 
     CharacterDataParser.loadCharacterCache(); // TODO: Migrate characters to BaseRegistry.
     NoteKindManager.loadScripts();

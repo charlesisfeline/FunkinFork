@@ -15,8 +15,6 @@ import flixel.util.FlxSignal;
 import funkin.ui.mainmenu.MainMenuState;
 import flixel.addons.transition.FlxTransitionableState;
 import openfl.display.BitmapData;
-import funkin.data.stickers.StickerRegistry;
-import funkin.data.stickers.StickerSet;
 import funkin.ui.freeplay.FreeplayState;
 import openfl.geom.Matrix;
 import funkin.audio.FunkinSound;
@@ -157,20 +155,11 @@ class StickerSubState extends MusicBeatSubState
       grpStickers.clear();
     }
 
-    var stickerSets:Array<String> = StickerRegistry.instance.listEntryIds();
+    var stickerInfo:StickerInfo = new StickerInfo('stickers-set-1');
     var stickers:Map<String, Array<String>> = new Map<String, Array<String>>();
-
-    for (stickerSetEntry in stickerSets)
+    for (stickerSets in stickerInfo.getPack("all"))
     {
-      trace('Got sticker set: ${stickerSetEntry}');
-      var stickerSet:StickerSet = new StickerSet(stickerSetEntry);
-      var assetKey:String = stickerSet.getStickerSetAssetKey();
-      for (sticker in stickerSet.getPack("all"))
-      {
-        // add the asset key at the beginning of each sticker name because it's just easier lol
-        var stickerPack:Array<String> = stickerSet.getStickers(sticker).map(s -> '${assetKey}/${s}');
-        stickers.set(sticker, stickerPack);
-      }
+      stickers.set(stickerSets, stickerInfo.getStickers(stickerSets));
     }
 
     var xPos:Float = -100;
@@ -179,7 +168,7 @@ class StickerSubState extends MusicBeatSubState
     {
       var stickerSet:String = FlxG.random.getObject(stickers.keyValues());
       var sticker:String = FlxG.random.getObject(stickers.get(stickerSet));
-      var sticky:StickerSprite = new StickerSprite(0, 0, sticker);
+      var sticky:StickerSprite = new StickerSprite(0, 0, stickerInfo.name, sticker);
       sticky.visible = false;
 
       sticky.x = xPos;
@@ -319,4 +308,78 @@ class StickerSubState extends MusicBeatSubState
     if (switchingState) return;
     super.destroy();
   }
+}
+
+class StickerSprite extends FunkinSprite
+{
+  public var timing:Float = 0;
+
+  public function new(x:Float, y:Float, stickerSet:String, stickerName:String):Void
+  {
+    super(x, y);
+    loadTexture('transitionSwag/' + stickerSet + '/' + stickerName);
+    updateHitbox();
+    scrollFactor.set();
+  }
+}
+
+class StickerInfo
+{
+  public var name:String;
+  public var artist:String;
+  public var stickers:Map<String, Array<String>>;
+  public var stickerPacks:Map<String, Array<String>>;
+
+  public function new(stickerSet:String):Void
+  {
+    var path = Paths.file('images/transitionSwag/' + stickerSet + '/stickers.json');
+    var json = Json.parse(Assets.getText(path));
+
+    // doin this dipshit nonsense cuz i dunno how to deal with casting a json object with
+    // a dash in its name (sticker-packs)
+    var jsonInfo:StickerShit = cast json;
+
+    this.name = jsonInfo.name;
+    this.artist = jsonInfo.artist;
+
+    stickerPacks = new Map<String, Array<String>>();
+
+    for (field in Reflect.fields(json.stickerPacks))
+    {
+      var stickerFunny = json.stickerPacks;
+      var stickerStuff = Reflect.field(stickerFunny, field);
+
+      stickerPacks.set(field, cast stickerStuff);
+    }
+
+    // creates a similar for loop as before but for the stickers
+    stickers = new Map<String, Array<String>>();
+
+    for (field in Reflect.fields(json.stickers))
+    {
+      var stickerFunny = json.stickers;
+      var stickerStuff = Reflect.field(stickerFunny, field);
+
+      stickers.set(field, cast stickerStuff);
+    }
+  }
+
+  public function getStickers(stickerName:String):Array<String>
+  {
+    return this.stickers[stickerName];
+  }
+
+  public function getPack(packName:String):Array<String>
+  {
+    return this.stickerPacks[packName];
+  }
+}
+
+// somethin damn cute just for the json to cast to!
+typedef StickerShit =
+{
+  name:String,
+  artist:String,
+  stickers:Map<String, Array<String>>,
+  stickerPacks:Map<String, Array<String>>
 }
