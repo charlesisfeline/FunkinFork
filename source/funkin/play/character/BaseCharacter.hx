@@ -552,9 +552,9 @@ class BaseCharacter extends Bopper
     {
       if (curNoteKind != null)
       {
-        if (curNoteKind.noanim == false)
+        if (NoteKindManager.getNoteKindanimtype(event.note.noteData.kind) == false)
         {
-          if (curNoteKind.suffix != '')
+          if (NoteKindManager.getNoteKindsuffix(event.note.noteData.kind) != '')
           {
             this.playSingAnimation(event.note.noteData.getDirection(), false, curNoteKind.suffix);
             holdTimer = 0;
