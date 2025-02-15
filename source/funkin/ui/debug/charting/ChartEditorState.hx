@@ -2926,6 +2926,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     playbarBPM.onClick = _ -> {
       if (FlxG.keys.pressed.CONTROL)
       {
+        if (menubarItemToggleToolboxMetadata.selected) return;
         this.setToolboxState(CHART_EDITOR_TOOLBOX_METADATA_LAYOUT, true);
         // TODO: Figure out a way to prevent this from calling the on change event / opening the dialog twice
         menubarItemToggleToolboxMetadata.selected = true;
@@ -2945,6 +2946,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     playbarDifficulty.onClick = _ -> {
       if (FlxG.keys.pressed.CONTROL)
       {
+        if (menubarItemToggleToolboxDifficulty.selected) return;
         this.setToolboxState(CHART_EDITOR_TOOLBOX_DIFFICULTY_LAYOUT, true);
         // TODO: Figure out a way to prevent this from calling the on change event / opening the dialog twice
         menubarItemToggleToolboxDifficulty.selected = true;
