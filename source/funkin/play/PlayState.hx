@@ -2255,8 +2255,6 @@ class PlayState extends MusicBeatSubState
      */
   function onKeyRelease(event:PreciseInputEvent):Void
   {
-    // if (isGamePaused) return;
-
     // Do the minimal possible work here.
     inputReleaseQueue.push(event);
   }
