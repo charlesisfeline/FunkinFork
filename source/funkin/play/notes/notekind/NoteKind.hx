@@ -25,29 +25,16 @@ class NoteKind implements INoteScriptedClass
   public var noteStyleId:Null<String>;
 
   /**
-   * should this have anims
-   */
-  public var noanim:Bool;
-
-  /**
-   * the anim suffix
-   */
-  public var suffix:String;
-
-  /**
    * Custom parameters for the chart editor
    */
   public var params:Array<NoteKindParam>;
 
-  public function new(noteKind:String, description:String = "", ?noteStyleId:String, ?params:Array<NoteKindParam>, ?anim:Bool, ?suffix:String)
+  public function new(noteKind:String, description:String = "", ?noteStyleId:String, ?params:Array<NoteKindParam>)
   {
     this.noteKind = noteKind;
     this.description = description;
     this.noteStyleId = noteStyleId;
     this.params = params ?? [];
-    this.noanim = anim ?? false;
-    trace(this.noanim);
-    this.suffix = suffix ?? '';
   }
 
   public function toString():String
@@ -92,6 +79,8 @@ abstract NoteKindParamType(String) from String to String
 
   public static final INT:String = 'Int';
 
+  public static final BOOL:String = 'Bool';
+
   public static final FLOAT:String = 'Float';
 }
 
@@ -126,6 +115,8 @@ typedef NoteKindParamData =
 typedef NoteKindParam =
 {
   name:String,
+  noanimation:Bool,
+  suffix:String,
   description:String,
   type:NoteKindParamType,
   ?data:NoteKindParamData
