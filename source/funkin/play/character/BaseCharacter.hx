@@ -49,6 +49,11 @@ class BaseCharacter extends Bopper
   public var debug:Bool = false;
 
   /**
+   * used to overided the sing anim in note types
+   */
+  public var singOveride:Bool = false;
+
+  /**
    * This character plays a given animation when hitting these specific combo numbers.
    */
   public var comboNoteCounts(default, null):Array<Int>;
@@ -518,34 +523,13 @@ class BaseCharacter extends Bopper
     if (event.note.noteData.getMustHitNote() && characterType == BF && event.note.noteData.kind != 'noanim')
     {
       // If the note is from the same strumline, play the sing animation.
-      if (event.note.noteData.params.noanimation == false)
-      {
-        if (event.note.noteData.params.suffix != null)
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false, event.note.noteData.params.suffix);
-        }
-        else
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false);
-        }
-      }
-
+      this.playSingAnimation(event.note.noteData.getDirection(), false);
       holdTimer = 0;
     }
     else if (!event.note.noteData.getMustHitNote() && characterType == DAD && event.note.noteData.kind != 'noanim')
     {
       // If the note is from the same strumline, play the sing animation.
-      if (event.note.noteData.params.noanimation == false)
-      {
-        if (event.note.noteData.params.suffix != null)
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false, event.note.noteData.params.suffix);
-        }
-        else
-        {
-          this.playSingAnimation(event.note.noteData.getDirection(), false);
-        }
-      }
+      this.playSingAnimation(event.note.noteData.getDirection(), false);
       holdTimer = 0;
     }
     else if (characterType == GF && event.note.noteData.getMustHitNote())
@@ -658,7 +642,10 @@ class BaseCharacter extends Bopper
     // restart even if already playing, because the character might sing the same note twice.
     // trace('Playing ${anim}...');
 
-    playAnimation(anim, true);
+    if (singOveride == false)
+    {
+      playAnimation(anim, true);
+    }
   }
 
   public override function playAnimation(name:String, restart:Bool = false, ignoreOther:Bool = false, reversed:Bool = false):Void
