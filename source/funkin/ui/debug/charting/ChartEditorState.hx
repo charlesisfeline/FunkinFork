@@ -1270,14 +1270,13 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
    * If none already exists, it's intialized with the current song name in lower-kebab-case.
    */
   var _songManifestData:Null<ChartManifestData> = null;
+
   var songManifestData(get, set):ChartManifestData;
 
   function get_songManifestData():ChartManifestData
   {
     if (_songManifestData != null) return _songManifestData;
-    return _songManifestData = new ChartManifestData(
-      currentSongName.toLowerKebabCase().replace(' ', '-').sanitize()
-    );
+    return _songManifestData = new ChartManifestData(currentSongName.toLowerKebabCase().replace(' ', '-').sanitize());
   }
 
   function set_songManifestData(value:ChartManifestData):ChartManifestData
@@ -4262,8 +4261,8 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
   function handleCursor():Void
   {
     // Mouse sounds
-    if (FlxG.mouse.justPressed) FunkinSound.playOnce(Paths.sound("chartingSounds/ClickDown"));
-    if (FlxG.mouse.justReleased) FunkinSound.playOnce(Paths.sound("chartingSounds/ClickUp"));
+    if (FlxG.mouse.justPressed) this.playSound(Paths.sound("chartingSounds/ClickDown"), 1.0, FlxG.random.float(0.9, 1.1));
+    if (FlxG.mouse.justReleased) this.playSound(Paths.sound("chartingSounds/ClickUp"), 1.0, FlxG.random.float(0.9, 1.1));
 
     // Note: If a menu is open in HaxeUI, don't handle cursor behavior.
     var shouldHandleCursor:Bool = !(isHaxeUIFocused || playbarHeadDragging || isHaxeUIDialogOpen)
@@ -4741,10 +4740,8 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
           if (dragTargetCurrentStep != dragDistanceSteps || dragTargetCurrentColumn != dragDistanceColumns)
           {
             // Play a sound as we drag.
-            if ((dragTargetCurrentColumn != dragDistanceColumns && overlapsGrid) || dragTargetCurrentStep != dragDistanceSteps)
-            {
-              this.playSound(Paths.sound('chartingSounds/noteLay'));
-            }
+            if ((dragTargetCurrentColumn != dragDistanceColumns && overlapsGrid)
+              || dragTargetCurrentStep != dragDistanceSteps) this.playSound(Paths.sound('chartingSounds/noteLay'), 1.0, FlxG.random.float(0.975, 1.025));
 
             trace('Dragged ${dragDistanceColumns} X and ${dragDistanceSteps} Y.');
             dragTargetCurrentStep = dragDistanceSteps;
@@ -4770,7 +4767,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
             if (dragLengthCurrent != dragLengthSteps)
             {
               stretchySounds = !stretchySounds;
-              this.playSound(Paths.sound('chartingSounds/stretch' + (stretchySounds ? '1' : '2') + '_UI'));
+              this.playSound(Paths.sound('chartingSounds/stretch' + (stretchySounds ? '1' : '2') + '_UI'), 1.0, FlxG.random.float(0.9, 1.1));
 
               dragLengthCurrent = dragLengthSteps;
             }
@@ -4793,7 +4790,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         {
           if (dragLengthSteps > 0)
           {
-            this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'));
+            this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'), 1.0, FlxG.random.float(0.9, 1.1));
             // Apply the new length.
             performCommand(new ExtendNoteLengthCommand(currentPlaceNoteData, dragLengthMs));
           }
@@ -4802,7 +4799,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
             // Apply the new (zero) length if we are changing the length.
             if (currentPlaceNoteData.length > 0)
             {
-              this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'));
+              this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'), 1.0, FlxG.random.float(0.9, 1.1));
               performCommand(new ExtendNoteLengthCommand(currentPlaceNoteData, 0));
             }
           }
@@ -5052,7 +5049,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
             else
             {
               // Right click removes hold from the note.
-              this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'));
+              this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'), 1.0, FlxG.random.float(0.9, 1.1));
               performCommand(new ExtendNoteLengthCommand(highlightedHoldNote.noteData, 0));
             }
           }
@@ -5488,7 +5485,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         if (playheadDragLengthCurrent[column] != targetNoteLengthStepsInt)
         {
           stretchySounds = !stretchySounds;
-          this.playSound(Paths.sound('chartingSounds/stretch' + (stretchySounds ? '1' : '2') + '_UI'));
+          this.playSound(Paths.sound('chartingSounds/stretch' + (stretchySounds ? '1' : '2') + '_UI'), 1.0, FlxG.random.float(0.9, 1.1));
           playheadDragLengthCurrent[column] = targetNoteLengthStepsInt;
         }
         ghostHold.visible = true;
@@ -5531,7 +5528,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     {
       // Extend the note to the playhead position.
       trace('Extending note. ${column}');
-      this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'));
+      this.playSound(Paths.sound('chartingSounds/stretchSNAP_UI'), 1.0, FlxG.random.float(0.9, 1.1));
       performCommand(new ExtendNoteLengthCommand(currentLiveInputPlaceNoteData[column], newNoteLength));
       currentLiveInputPlaceNoteData[column] = null;
       gridPlayheadGhostHoldNotes[column].noteData = null;
@@ -6466,9 +6463,9 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
       switch (noteData.getStrumlineIndex())
       {
         case 0: // Player
-          if (hitsoundVolumePlayer > 0) this.playSound(Paths.sound('chartingSounds/hitNotePlayer'), hitsoundVolumePlayer);
+          if (hitsoundVolumePlayer > 0) this.playSound(Paths.sound('chartingSounds/hitNotePlayer'), hitsoundVolumePlayer, FlxG.random.float(0.95, 1.05));
         case 1: // Opponent
-          if (hitsoundVolumeOpponent > 0) this.playSound(Paths.sound('chartingSounds/hitNoteOpponent'), hitsoundVolumeOpponent);
+          if (hitsoundVolumeOpponent > 0) this.playSound(Paths.sound('chartingSounds/hitNoteOpponent'), hitsoundVolumeOpponent, FlxG.random.float(0.95, 1.05));
       }
     }
   }
@@ -6715,10 +6712,12 @@ typedef ChartEditorParams =
    * If non-null, load this song immediately instead of the welcome screen.
    */
   var ?targetSongId:String;
+
   /**
    * If non-null, load this difficulty immediately instead of the default difficulty.
    */
   var ?targetSongDifficulty:String;
+
   /**
    * If non-null, load this variation immediately instead of the default variation.
    */
