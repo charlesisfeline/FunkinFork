@@ -1628,10 +1628,7 @@ class FreeplayState extends MusicBeatSubState
       });
     }
 
-    if (accepted)
-    {
-      grpCapsules.members[curSelected].onConfirm();
-    }
+    if (accepted) grpCapsules.members[curSelected].onConfirm();
 
     if (FlxG.keys.pressed.R && !busy)
     {
