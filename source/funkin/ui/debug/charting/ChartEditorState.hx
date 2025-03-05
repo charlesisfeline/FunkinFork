@@ -68,6 +68,9 @@ import funkin.ui.debug.charting.commands.DeselectItemsCommand;
 import funkin.ui.debug.charting.commands.ExtendNoteLengthCommand;
 import funkin.ui.debug.charting.commands.FlipNotesCommand;
 import funkin.ui.debug.charting.commands.InvertSelectedItemsCommand;
+import funkin.ui.debug.charting.commands.SnapEventsCommand;
+import funkin.ui.debug.charting.commands.SnapItemsCommand;
+import funkin.ui.debug.charting.commands.SnapNotesCommand;
 import funkin.ui.debug.charting.commands.MoveEventsCommand;
 import funkin.ui.debug.charting.commands.MoveItemsCommand;
 import funkin.ui.debug.charting.commands.MoveNotesCommand;
@@ -5319,7 +5322,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
     playbarHeadLayout.y = FlxG.height - 48 - 8;
 
     var songPos:Float = Conductor.instance.songPosition + Conductor.instance.instrumentalOffset;
-    var songPosMilliseconds:String = Std.string(Math.floor(Math.abs(songPos) % 1000)).lpad('0', 2).substr(0, 2);
+    var songPosMilliseconds:String = Std.string(Math.floor(Math.abs(songPos) % 1000)).lpad('0', 3).substr(0, 2);
     var songPosSeconds:String = Std.string(Math.floor((Math.abs(songPos) / 1000) % 60)).lpad('0', 2);
     var songPosMinutes:String = Std.string(Math.floor((Math.abs(songPos) / 1000) / 60)).lpad('0', 2);
     if (songPos < 0) songPosMinutes = '-' + songPosMinutes;
@@ -5695,6 +5698,23 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         targetSnappedMs;
       }
       performCommand(new PasteItemsCommand(targetMs));
+    }
+
+    // SHIFT + N = Snap
+    if (FlxG.keys.pressed.SHIFT && FlxG.keys.justPressed.N)
+    {
+      if (currentNoteSelection.length > 0 && currentEventSelection.length > 0)
+      {
+        performCommand(new SnapItemsCommand(currentNoteSelection, currentEventSelection));
+      }
+      else if (currentNoteSelection.length > 0)
+      {
+        performCommand(new SnapNotesCommand(currentNoteSelection));
+      }
+      else if (currentEventSelection.length > 0)
+      {
+        performCommand(new SnapEventsCommand(currentEventSelection));
+      }
     }
 
     // DELETE = Delete
@@ -6104,6 +6124,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
   {
     uiCamera.revive();
     FlxG.cameras.reset(uiCamera);
+    uiCamera.onResize();
 
     add(this.root);
   }
