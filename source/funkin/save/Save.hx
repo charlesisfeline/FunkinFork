@@ -104,6 +104,7 @@ class Save
           autoPause: true,
           autoFullscreen: false,
           rememberFreeplayChar: true,
+          strumlineBackgroundOpacity: 0,
           inputOffset: 0,
           audioVisualOffset: 0,
           unlockedFramerate: false,
@@ -1427,11 +1428,18 @@ typedef SaveDataOptions =
   var autoPause:Bool;
 
   /**
+   * If >0, the game will display a semi-opaque background under the notes.
+   * `0` for no background, `100` for solid black if you're freaky like that
+   * @default `0`
+   */
+  var strumlineBackgroundOpacity:Int;
+
+  /**
    * If enabled, the game will automatically launch in fullscreen on startup.
    * @default `true`
    */
   var autoFullscreen:Bool;
-  
+
   /**
    * If enabled, the game will enter freeplay with the last character you had selected after exiting freeplay. (Look, it might as well be an option ok?) - Lasercar
    * @default `true`

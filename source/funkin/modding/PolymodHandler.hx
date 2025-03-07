@@ -44,7 +44,7 @@ class PolymodHandler
   /**
    * Where relative to the executable that mods are located.
    */
-  static final MOD_FOLDER:String =
+  public static final MOD_FOLDER:String =
     #if (REDIRECT_ASSETS_FOLDER && macos)
     '../../../../../../../example_mods'
     #elseif REDIRECT_ASSETS_FOLDER
@@ -347,8 +347,19 @@ class PolymodHandler
   {
     return {
       assetLibraryPaths: [
-        'default' => 'preload', 'shared' => 'shared', 'songs' => 'songs', 'videos' => 'videos', 'tutorial' => 'tutorial', 'week1' => 'week1',
-        'week2' => 'week2', 'week3' => 'week3', 'week4' => 'week4', 'week5' => 'week5', 'week6' => 'week6', 'week7' => 'week7', 'weekend1' => 'weekend1',
+        'default' => 'preload',
+        'shared' => 'shared',
+        'songs' => 'songs',
+        'videos' => 'videos',
+        'tutorial' => 'tutorial',
+        'week1' => 'week1',
+        'week2' => 'week2',
+        'week3' => 'week3',
+        'week4' => 'week4',
+        'week5' => 'week5',
+        'week6' => 'week6',
+        'week7' => 'week7',
+        'weekend1' => 'weekend1',
       ],
       coreAssetRedirect: CORE_FOLDER,
     }
@@ -431,7 +442,7 @@ class PolymodHandler
 
     // Forcibly reload Polymod so it finds any new files.
     // TODO: Replace this with loadEnabledMods().
-    funkin.modding.PolymodHandler.loadAllMods();
+    funkin.modding.PolymodHandler.loadEnabledMods();
 
     // Reload scripted classes so stages and modules will update.
     Polymod.registerAllScriptClasses();

@@ -53,14 +53,14 @@ class ColorsMenu extends Page
 
     if (controls.UI_UP)
     {
-      // grpNotes.members[curSelected].colorSwap.update(elapsed * 0.3);
-      // Note.arrowColors[curSelected] += elapsed * 0.3;
+      grpNotes.members[curSelected].colorSwap.update(elapsed * 0.3);
+      funkin.util.Constants.COLOR_NOTES[curSelected] += elapsed * 0.3;
     }
 
     if (controls.UI_DOWN)
     {
-      // grpNotes.members[curSelected].colorSwap.update(-elapsed * 0.3);
-      // Note.arrowColors[curSelected] += -elapsed * 0.3;
+      grpNotes.members[curSelected].colorSwap.update(-elapsed * 0.3);
+      funkin.util.Constants.COLOR_NOTES[curSelected] += -elapsed * 0.3;
     }
 
     super.update(elapsed);

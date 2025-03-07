@@ -175,8 +175,8 @@ class Preferences
     save.flush();
     return value;
   }
-  
-    /**
+
+  /**
    * If enabled, the game will enter freeplay with the last character you had selected after exiting freeplay. (Look, it might as well be an option ok?) - Lasercar
    * @default `true`
    */
@@ -235,6 +235,26 @@ class Preferences
   // This also gets set in the init function in Main.hx, since we need to definitely override it
   public static var lockedFramerateFunction = untyped js.Syntax.code("window.requestAnimationFrame");
   #end
+
+  /**
+   * If >0, the game will display a semi-opaque background under the notes.
+   * `0` for no background, `100` for solid black if you're freaky like that
+   * @default `0`
+   */
+  public static var strumlineBackgroundOpacity(get, set):Int;
+
+  static function get_strumlineBackgroundOpacity():Int
+  {
+    return (Save?.instance?.options?.strumlineBackgroundOpacity ?? 0);
+  }
+
+  static function set_strumlineBackgroundOpacity(value:Int):Int
+  {
+    var save:Save = Save.instance;
+    save.options.strumlineBackgroundOpacity = value;
+    save.flush();
+    return value;
+  }
 
   /**
    * Loads the user's preferences from the save data and apply them.

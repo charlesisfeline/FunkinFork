@@ -183,15 +183,21 @@ class OptionsMenu extends Page
     super();
 
     add(items = new TextMenuList());
-    createItem("PREFERENCES", function() switchPage(Preferences));
-    createItem("CONTROLS", function() switchPage(Controls));
-    createItem("INPUT OFFSETS", function() {
-      #if web
-      LoadingState.transitionToState(() -> new LatencyState());
-      #else
-      FlxG.state.openSubState(new LatencyState());
-      #end
-    });
+    createItem("PREFERENCES", () -> switchPage(Preferences));
+    createItem("CONTROLS", () -> switchPage(Controls));
+    createItem("COLORS", () -> switchPage(Colors));
+    createItem("INPUT OFFSETS", () ->
+      {
+        #if web
+        LoadingState.transitionToState(() -> new LatencyState());
+        #else
+        FlxG.state.openSubState(new LatencyState());
+        #end
+      });
+
+    #if !web
+    createItem("MODS", () -> FlxG.state.openSubState(new funkin.ui.debug.mods.ModsSelectState()));
+    #end
 
     #if newgrounds
     if (NGio.isLoggedIn) createItem("LOGOUT", selectLogout);
@@ -245,7 +251,7 @@ class OptionsMenu extends Page
     var onPromptClose = checkLoginStatus;
     if (onClose != null)
     {
-      onPromptClose = function() {
+      onPromptClose = () -> {
         checkLoginStatus();
         onClose();
       }
