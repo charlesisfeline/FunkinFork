@@ -86,7 +86,6 @@ class SetCameraBopSongEvent extends SongEvent
         name: 'rate',
         title: 'Rate',
         defaultValue: 4,
-        min: 0,
         step: 1,
         type: SongEventFieldType.INTEGER,
         units: 'beats/zoom'
