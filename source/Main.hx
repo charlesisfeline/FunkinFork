@@ -53,9 +53,6 @@ class Main extends Sprite
     haxe.Log.trace = funkin.util.logging.AnsiTrace.trace;
     funkin.util.logging.AnsiTrace.traceBF();
 
-    // Disable openfl's error logging crashing the game.
-    openfl.utils._internal.Log.throwErrors = false;
-
     // Load mods to override assets.
     funkin.modding.PolymodHandler.loadEnabledMods();
 
