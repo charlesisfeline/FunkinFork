@@ -1132,8 +1132,8 @@ class PlayState extends MusicBeatSubState
 
     if (!isMinimalMode)
     {
-      iconP1.updatePosition();
-      iconP2.updatePosition();
+      if (iconP1 != null) iconP1.updatePosition();
+      if (iconP1 != null) iconP2.updatePosition();
     }
 
     // Transition to the game over substate.
