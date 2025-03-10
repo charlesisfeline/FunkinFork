@@ -1457,39 +1457,33 @@ class PlayState extends MusicBeatSubState
 
     if (FlxG.sound.music != null)
     {
-      var correctSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition - Conductor.instance.combinedOffset));
+      var correctSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, FlxG.sound.music.time));
+      var correctInstSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition));
       var playerVoicesError:Float = 0;
       var opponentVoicesError:Float = 0;
+      var instrumentalError:Float = FlxG.sound.music.time - correctInstSync;
 
       if (vocals != null)
       {
         @:privateAccess // todo: maybe make the groups public :thinking:
         {
-          vocals.playerVoices.forEachAlive(function(voice:FunkinSound) {
+          vocals.playerVoices.forEachAlive((voice:FunkinSound) -> {
             var currentRawVoiceTime:Float = voice.time + vocals.playerVoicesOffset;
             if (Math.abs(currentRawVoiceTime - correctSync) > Math.abs(playerVoicesError)) playerVoicesError = currentRawVoiceTime - correctSync;
           });
 
-          vocals.opponentVoices.forEachAlive(function(voice:FunkinSound) {
+          vocals.opponentVoices.forEachAlive((voice:FunkinSound) -> {
             var currentRawVoiceTime:Float = voice.time + vocals.opponentVoicesOffset;
             if (Math.abs(currentRawVoiceTime - correctSync) > Math.abs(opponentVoicesError)) opponentVoicesError = currentRawVoiceTime - correctSync;
           });
         }
       }
 
-      if (!startingSong
-        && (Math.abs(FlxG.sound.music.time - correctSync) > 100
-          || Math.abs(playerVoicesError) > 100
-          || Math.abs(opponentVoicesError) > 100))
+      if (!startingSong && (Math.abs(instrumentalError) > 100 || Math.abs(playerVoicesError) > 100 || Math.abs(opponentVoicesError) > 100))
       {
         trace("VOCALS NEED RESYNC");
-        if (vocals != null)
-        {
-          trace(playerVoicesError);
-          trace(opponentVoicesError);
-        }
-        trace(FlxG.sound.music.time);
-        trace(correctSync);
+        if (vocals != null) trace(playerVoicesError + " - " + opponentVoicesError);
+        trace(FlxG.sound.music.time + " | " + correctSync);
         resyncVocals();
       }
     }
@@ -2189,7 +2183,8 @@ class PlayState extends MusicBeatSubState
     // Skip this if the music is paused (GameOver, Pause menu, start-of-song offset, etc.)
     if (!(FlxG.sound.music?.playing ?? false)) return;
 
-    var timeToPlayAt:Float = Math.min(FlxG.sound.music.length, Math.max(Math.min(Conductor.instance.combinedOffset, 0), Conductor.instance.songPosition) - Conductor.instance.combinedOffset);
+    var timeToPlayAt:Float = Math.min(FlxG.sound.music.length,
+      Math.max(Math.min(Conductor.instance.combinedOffset, 0), Conductor.instance.songPosition) - Conductor.instance.combinedOffset);
     trace('Resyncing vocals to ${timeToPlayAt}');
 
     FlxG.sound.music.pause();

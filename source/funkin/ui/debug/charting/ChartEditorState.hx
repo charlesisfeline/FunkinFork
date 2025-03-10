@@ -1723,7 +1723,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
    */
   var selectedDifficulty(default, set):String = Constants.DEFAULT_DIFFICULTY;
 
-  function set_selectedDifficulty(value:String):String
+  function set_selectedDifficulty(value:Null<String>):String
   {
     if (value == null) value = availableDifficulties[0] ?? Constants.DEFAULT_DIFFICULTY;
 
@@ -3531,7 +3531,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         // Don't go backwards in the song, only forwards
         if (oldTime < audioInstTrack.time)
         {
-          Conductor.instance.update(audioInstTrack.time);
+          Conductor.instance.update(audioInstTrack.time, false);
           oldTime = audioInstTrack.time;
         }
         else
@@ -3562,7 +3562,7 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
         // Don't go backwards in the song, only forwards
         if (oldTime < audioInstTrack.time)
         {
-          Conductor.instance.update(audioInstTrack.time);
+          Conductor.instance.update(audioInstTrack.time, false);
           oldTime = audioInstTrack.time;
         }
         else
@@ -4360,7 +4360,6 @@ class ChartEditorState extends UIState // UIState derives from MusicBeatState
       {
         overlapsSelection = true;
       }
-
 
       var overlapsHealthIcons:Bool = FlxG.mouse.overlaps(healthIconBF) || FlxG.mouse.overlaps(healthIconDad);
 
