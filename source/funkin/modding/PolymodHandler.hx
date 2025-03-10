@@ -19,6 +19,7 @@ import funkin.util.FileUtil;
 import funkin.util.macro.ClassMacro;
 import polymod.backends.PolymodAssets.PolymodAssetType;
 import polymod.format.ParseRules.TextFileFormat;
+import polymod.util.VersionUtil;
 import polymod.Polymod;
 
 /**
@@ -38,12 +39,12 @@ class PolymodHandler
    * Using more complex rules allows mods from older compatible versions to stay functioning,
    * while preventing mods made for future versions from being installed.
    */
-  static final API_VERSION_RULE:String = ">=0.5.0 <0.6.0";
+  public static final API_VERSION_RULE:String = ">=0.5.0 <0.6.0";
 
   /**
    * Where relative to the executable that mods are located.
    */
-  static final MOD_FOLDER:String =
+  public static final MOD_FOLDER:String =
     #if (REDIRECT_ASSETS_FOLDER && macos)
     '../../../../../../../example_mods'
     #elseif REDIRECT_ASSETS_FOLDER
@@ -60,6 +61,8 @@ class PolymodHandler
     #else
     null
     #end;
+
+  public static var outdatedMods(default, null):Array<ModMetadata> = [];
 
   public static var loadedModIds:Array<String> = [];
 
@@ -242,13 +245,22 @@ class PolymodHandler
 
     // Add import aliases for certain classes.
     // NOTE: Scripted classes are automatically aliased to their parent class.
+
     Polymod.addImportAlias('flixel.math.FlxPoint', flixel.math.FlxPoint.FlxBasePoint);
+
+    // Sandboxed version for use in mods
+    Polymod.addImportAlias('funkin.util.FileUtil', funkin.util.FileUtil.FileUtilSandboxed);
 
     Polymod.addImportAlias('funkin.data.event.SongEventSchema', funkin.data.event.SongEventSchema.SongEventSchemaRaw);
 
     // `lime.utils.Assets` literally just has a private `resolveClass` function for some reason? so we replace it with our own.
     Polymod.addImportAlias('lime.utils.Assets', funkin.Assets);
     Polymod.addImportAlias('openfl.utils.Assets', funkin.Assets);
+
+    // Backward compatibility for certain scripted classes outside `funkin.modding.base`.
+    Polymod.addImportAlias('funkin.modding.base.ScriptedFunkinSprite', funkin.graphics.ScriptedFunkinSprite);
+    Polymod.addImportAlias('funkin.modding.base.ScriptedMusicBeatState', funkin.ui.ScriptedMusicBeatState);
+    Polymod.addImportAlias('funkin.modding.base.ScriptedMusicBeatSubState', funkin.ui.ScriptedMusicBeatSubState);
 
     // Add blacklisting for prohibited classes and packages.
 
@@ -290,7 +302,7 @@ class PolymodHandler
     Polymod.blacklistImport('openfl.utils.Assets');
     Polymod.blacklistImport('openfl.Lib');
     Polymod.blacklistImport('openfl.system.ApplicationDomain');
-    Polymod.blacklistImport('funkin.util.FunkinTypeResolver');
+    Polymod.blacklistImport('openfl.net.SharedObject');
 
     // `openfl.desktop.NativeProcess`
     // Can load native processes on the host operating system.
@@ -335,8 +347,19 @@ class PolymodHandler
   {
     return {
       assetLibraryPaths: [
-        'default' => 'preload', 'shared' => 'shared', 'songs' => 'songs', 'videos' => 'videos', 'tutorial' => 'tutorial', 'week1' => 'week1',
-        'week2' => 'week2', 'week3' => 'week3', 'week4' => 'week4', 'week5' => 'week5', 'week6' => 'week6', 'week7' => 'week7', 'weekend1' => 'weekend1',
+        'default' => 'preload',
+        'shared' => 'shared',
+        'songs' => 'songs',
+        'videos' => 'videos',
+        'tutorial' => 'tutorial',
+        'week1' => 'week1',
+        'week2' => 'week2',
+        'week3' => 'week3',
+        'week4' => 'week4',
+        'week5' => 'week5',
+        'week6' => 'week6',
+        'week7' => 'week7',
+        'weekend1' => 'weekend1',
       ],
       coreAssetRedirect: CORE_FOLDER,
     }
@@ -355,12 +378,27 @@ class PolymodHandler
     var modMetadata:Array<ModMetadata> = Polymod.scan(
       {
         modRoot: MOD_FOLDER,
-        apiVersionRule: API_VERSION_RULE,
+        apiVersionRule: VersionUtil.DEFAULT_VERSION_RULE,
         fileSystem: modFileSystem,
         errorCallback: PolymodErrorHandler.onPolymodError
       });
-    trace('Found ${modMetadata.length} mods when scanning.');
-    return modMetadata;
+
+    outdatedMods = [];
+    var validMods:Array<ModMetadata> = [];
+
+    for (data in modMetadata)
+    {
+      if (!VersionUtil.match(data.apiVersion, API_VERSION_RULE))
+      {
+        outdatedMods.push(data);
+      }
+      else
+      {
+        validMods.push(data);
+      }
+    }
+
+    return validMods;
   }
 
   /**
@@ -404,7 +442,7 @@ class PolymodHandler
 
     // Forcibly reload Polymod so it finds any new files.
     // TODO: Replace this with loadEnabledMods().
-    funkin.modding.PolymodHandler.loadAllMods();
+    funkin.modding.PolymodHandler.loadEnabledMods();
 
     // Reload scripted classes so stages and modules will update.
     Polymod.registerAllScriptClasses();

@@ -57,20 +57,6 @@ class CharSelectGF extends FlxAtlasSprite implements IBPMSyncedScriptedClass
         doFade(animInInfo);
       default:
     }
-
-    #if FEATURE_DEBUG_FUNCTIONS
-    if (FlxG.keys.justPressed.J)
-    {
-      alpha = 1;
-      x = y = 0;
-      fadingStatus = FADE_OUT;
-    }
-    if (FlxG.keys.justPressed.K)
-    {
-      alpha = 0;
-      fadingStatus = FADE_IN;
-    }
-    #end
   }
 
   public function onStepHit(event:SongTimeScriptEvent):Void {}
@@ -111,9 +97,7 @@ class CharSelectGF extends FlxAtlasSprite implements IBPMSyncedScriptedClass
         var animFrame:Int = Math.round(levels[i].value * 12);
 
         #if desktop
-        // Web version scales with the Flixel volume level.
-        // This line brings platform parity but looks worse.
-        // animFrame = Math.round(animFrame * FlxG.sound.volume);
+        animFrame = Math.round(animFrame * (Math.round(FlxG.sound.logToLinear(FlxG.sound.volume) * 10) / 10));
         #end
 
         animFrame = Math.floor(Math.min(12, animFrame));
@@ -171,8 +155,9 @@ class CharSelectGF extends FlxAtlasSprite implements IBPMSyncedScriptedClass
   /**
    * For switching between "GFs" such as gf, nene, etc
    * @param bf Which BF we are selecting, so that we know the accompyaning GF
+   * @param pressedSelect If select was pressed while switching character, play the confirm animation instead
    */
-  public function switchGF(bf:String):Void
+  public function switchGF(bf:String, pressedSelect:Bool = false):Void
   {
     var previousGFPath = currentGFPath;
 
@@ -200,6 +185,8 @@ class CharSelectGF extends FlxAtlasSprite implements IBPMSyncedScriptedClass
       animOutInfo = FramesJSFLParser.parse(animInfoPath + '/Out.txt');
     }
 
+    if (pressedSelect) playAnimation("confirm", true, false, true);
+    else
     playAnimation("idle", true, false, false);
 
     updateHitbox();

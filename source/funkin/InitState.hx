@@ -26,6 +26,7 @@ import funkin.play.character.CharacterData.CharacterDataParser;
 import funkin.play.notes.notekind.NoteKindManager;
 import funkin.play.PlayStatePlaylist;
 import funkin.ui.debug.charting.ChartEditorState;
+import funkin.modding.module.ModuleHandler;
 import funkin.ui.title.TitleState;
 import funkin.ui.transition.LoadingState;
 import funkin.util.CLIUtil;
@@ -81,6 +82,12 @@ class InitState extends FlxState
     WindowUtil.initWindowEvents();
     // Disable the thing on Windows where it tries to send a bug report to Microsoft because why do they care?
     WindowUtil.disableCrashHandler();
+
+    // Disable the lime/openfl log crashing the game and redirect the error printing.
+    lime.utils.Log.throwErrors = false;
+    lime.utils.Log.onError.add(function(error:String) {
+      lime.app.Application.current.window.alert(error, "Assets Error!");
+    });
 
     // This ain't a pixel art game! (most of the time)
     FlxSprite.defaultAntialiasing = true;

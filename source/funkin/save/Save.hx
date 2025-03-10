@@ -97,6 +97,7 @@ class Save
           zoomCamera: true,
           debugDisplay: false,
           autoPause: true,
+          autoFullscreen: false,
           inputOffset: 0,
           audioVisualOffset: 0,
           unlockedFramerate: false,
@@ -143,6 +144,10 @@ class Save
           metronomeVolume: 1.0,
           hitsoundVolumePlayer: 1.0,
           hitsoundVolumeOpponent: 1.0,
+          instVolume: 1.0,
+          playerVoiceVolume: 1.0,
+          opponentVoiceVolume: 1.0,
+          playbackSpeed: 1.0,
           themeMusic: true
         },
 
@@ -375,6 +380,57 @@ class Save
     data.optionsChartEditor.hitsoundVolumeOpponent = value;
     flush();
     return data.optionsChartEditor.hitsoundVolumeOpponent;
+  }
+
+  public var chartEditorInstVolume(get, set):Float;
+
+  function get_chartEditorInstVolume():Float
+  {
+    if (data.optionsChartEditor.instVolume == null) data.optionsChartEditor.instVolume = 1.0;
+
+    return data.optionsChartEditor.instVolume;
+  }
+
+  function set_chartEditorInstVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.instVolume = value;
+    flush();
+    return data.optionsChartEditor.instVolume;
+  }
+
+  public var chartEditorPlayerVoiceVolume(get, set):Float;
+
+  function get_chartEditorPlayerVoiceVolume():Float
+  {
+    if (data.optionsChartEditor.playerVoiceVolume == null) data.optionsChartEditor.playerVoiceVolume = 1.0;
+
+    return data.optionsChartEditor.playerVoiceVolume;
+  }
+
+  function set_chartEditorPlayerVoiceVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.playerVoiceVolume = value;
+    flush();
+    return data.optionsChartEditor.playerVoiceVolume;
+  }
+
+  public var chartEditorOpponentVoiceVolume(get, set):Float;
+
+  function get_chartEditorOpponentVoiceVolume():Float
+  {
+    if (data.optionsChartEditor.opponentVoiceVolume == null) data.optionsChartEditor.opponentVoiceVolume = 1.0;
+
+    return data.optionsChartEditor.opponentVoiceVolume;
+  }
+
+  function set_chartEditorOpponentVoiceVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.opponentVoiceVolume = value;
+    flush();
+    return data.optionsChartEditor.opponentVoiceVolume;
   }
 
   public var chartEditorThemeMusic(get, set):Bool;
@@ -1340,6 +1396,12 @@ typedef SaveDataOptions =
   var autoPause:Bool;
 
   /**
+   * If enabled, the game will automatically launch in fullscreen on startup.
+   * @default `true`
+   */
+  var autoFullscreen:Bool;
+
+  /**
    * Offset the user's inputs by this many ms.
    * @default `0`
    */
@@ -1557,10 +1619,16 @@ typedef SaveDataChartEditorOptions =
   var ?instVolume:Float;
 
   /**
-   * Voices volume in the Chart Editor.
+   * Player voice volume in the Chart Editor.
    * @default `1.0`
    */
-  var ?voicesVolume:Float;
+  var ?playerVoiceVolume:Float;
+
+  /**
+   * Opponent voice volume in the Chart Editor.
+   * @default `1.0`
+   */
+  var ?opponentVoiceVolume:Float;
 
   /**
    * Playback speed in the Chart Editor.

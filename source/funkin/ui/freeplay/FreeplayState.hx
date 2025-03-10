@@ -21,6 +21,7 @@ import flixel.util.FlxSpriteUtil;
 import flixel.util.FlxTimer;
 import funkin.audio.FunkinSound;
 import funkin.data.freeplay.player.PlayerRegistry;
+import funkin.data.song.SongData.SongMetadata;
 import funkin.data.song.SongRegistry;
 import funkin.data.story.level.LevelRegistry;
 import funkin.effects.IntervalShake;
@@ -54,6 +55,7 @@ import funkin.util.SortUtil;
 import openfl.display.BlendMode;
 import funkin.data.freeplay.style.FreeplayStyleRegistry;
 import funkin.data.song.SongData.SongMusicData;
+import funkin.ui.debug.charting.ChartEditorState;
 #if FEATURE_DISCORD_RPC
 import funkin.api.discord.DiscordClient;
 #end
@@ -175,6 +177,8 @@ class FreeplayState extends MusicBeatSubState
    * The remembered variation we were on when this menu was last accessed.
    */
   public static var rememberedVariation:String = Constants.DEFAULT_VARIATION;
+
+  var allDifficulties:Array<String> = Constants.DEFAULT_DIFFICULTY_LIST_FULL;
 
   var funnyCam:FunkinCamera;
   var rankCamera:FunkinCamera;
@@ -335,18 +339,11 @@ class FreeplayState extends MusicBeatSubState
     if (currentCharacter?.getFreeplayDJData() != null)
     {
       dj = new FreeplayDJ(640, 366, currentCharacterId);
-      exitMovers.set([dj],
-        {
-          x: -dj.width * 1.6,
-          speed: 0.5
-        });
+
+      addToExitMovers([dj], -dj.width * 1.6, null, 0.5, null);
+      addToExitMoversCharSel([dj], null, -175, 0.8, 0.1);
+
       add(dj);
-      exitMoversCharSel.set([dj],
-        {
-          y: -175,
-          speed: 0.8,
-          wait: 0.1
-        });
     }
 
     bgDad.shader = angleMaskShader;
@@ -362,19 +359,8 @@ class FreeplayState extends MusicBeatSubState
     bgDad.updateHitbox();
     blackOverlayBullshitLOLXD.updateHitbox();
 
-    exitMovers.set([blackOverlayBullshitLOLXD, bgDad],
-      {
-        x: FlxG.width * 1.5,
-        speed: 0.4,
-        wait: 0
-      });
-
-    exitMoversCharSel.set([blackOverlayBullshitLOLXD, bgDad],
-      {
-        y: -100,
-        speed: 0.8,
-        wait: 0.1
-      });
+    addToExitMovers([blackOverlayBullshitLOLXD, bgDad], FlxG.width * 1.5, null, 0.4, 0);
+    addToExitMoversCharSel([blackOverlayBullshitLOLXD, bgDad], null, -100, 0.8, 0.1);
 
     add(bgDad);
     // backingCard.pinkBack.width * 0.74
@@ -390,19 +376,8 @@ class FreeplayState extends MusicBeatSubState
 
     add(grpDifficulties);
 
-    exitMovers.set([grpDifficulties],
-      {
-        x: -300,
-        speed: 0.25,
-        wait: 0
-      });
-
-    exitMoversCharSel.set([grpDifficulties],
-      {
-        y: -270,
-        speed: 0.8,
-        wait: 0.1
-      });
+    addToExitMovers([grpDifficulties], -300, null, 0.25, 0);
+    addToExitMoversCharSel([grpDifficulties], null, -270, 0.8, 0.1);
 
     for (diffId in Constants.DEFAULT_DIFFICULTY_LIST_FULL)
     {
@@ -446,20 +421,8 @@ class FreeplayState extends MusicBeatSubState
     charSelectHint.y -= 100;
     FlxTween.tween(charSelectHint, {y: charSelectHint.y + 100}, 0.8, {ease: FlxEase.quartOut});
 
-    exitMovers.set([overhangStuff, fnfFreeplay, ostName, charSelectHint],
-      {
-        y: -overhangStuff.height,
-        x: 0,
-        speed: 0.2,
-        wait: 0
-      });
-
-    exitMoversCharSel.set([overhangStuff, fnfFreeplay, ostName, charSelectHint],
-      {
-        y: -300,
-        speed: 0.8,
-        wait: 0.1
-      });
+    addToExitMovers([overhangStuff, fnfFreeplay, ostName, charSelectHint], 0, -overhangStuff.height, 0.2, 0);
+    addToExitMoversCharSel([overhangStuff, fnfFreeplay, ostName, charSelectHint], null, -300, 0.8, 0.1);
 
     var sillyStroke:StrokeShader = new StrokeShader(0xFFFFFFFF, 2, 2);
     fnfFreeplay.shader = sillyStroke;
@@ -491,18 +454,8 @@ class FreeplayState extends MusicBeatSubState
     add(letterSort);
     letterSort.visible = false;
 
-    exitMovers.set([letterSort],
-      {
-        y: -100,
-        speed: 0.3
-      });
-
-    exitMoversCharSel.set([letterSort],
-      {
-        y: -270,
-        speed: 0.8,
-        wait: 0.1
-      });
+    addToExitMovers([letterSort], null, -100, 0.3, null);
+    addToExitMoversCharSel([letterSort], null, -270, 0.8, 0.1);
 
     // Reminder, this is a callback function being set, rather than these being called here in create()
     letterSort.changeSelectionCallback = (str) -> {
@@ -528,18 +481,8 @@ class FreeplayState extends MusicBeatSubState
       }
     };
 
-    exitMovers.set([fp, txtCompletion, fnfHighscoreSpr, clearBoxSprite],
-      {
-        x: FlxG.width,
-        speed: 0.3
-      });
-
-    exitMoversCharSel.set([fp, txtCompletion, fnfHighscoreSpr, clearBoxSprite],
-      {
-        y: -270,
-        speed: 0.8,
-        wait: 0.1
-      });
+    addToExitMovers([fp, txtCompletion, fnfHighscoreSpr, clearBoxSprite], FlxG.width, null, 0.3, null);
+    addToExitMoversCharSel([fp, txtCompletion, fnfHighscoreSpr, clearBoxSprite], null, -270, 0.8, 0.1);
 
     var diffSelLeft:DifficultySelector = new DifficultySelector(this, 20, grpDifficulties.y - 10, false, controls, styleData);
     var diffSelRight:DifficultySelector = new DifficultySelector(this, 325, grpDifficulties.y - 10, true, controls, styleData);
@@ -589,18 +532,8 @@ class FreeplayState extends MusicBeatSubState
       diffSelRight.visible = true;
       letterSort.visible = true;
 
-      exitMovers.set([diffSelLeft, diffSelRight],
-        {
-          x: -diffSelLeft.width * 2,
-          speed: 0.26
-        });
-
-      exitMoversCharSel.set([diffSelLeft, diffSelRight],
-        {
-          y: -270,
-          speed: 0.8,
-          wait: 0.1
-        });
+      addToExitMovers([diffSelLeft, diffSelRight], -diffSelLeft.width * 2, null, 0.26, null);
+      addToExitMoversCharSel([diffSelLeft, diffSelRight], null, -270, 0.8, 0.1);
 
       new FlxTimer().start(1 / 24, function(handShit) {
         fnfHighscoreSpr.visible = true;
@@ -637,6 +570,8 @@ class FreeplayState extends MusicBeatSubState
     {
       onDJIntroDone();
     }
+
+    allDifficulties = SongRegistry.instance.listAllDifficulties(currentCharacterId);
 
     // Generates song list with the starter params (who our current character is, last remembered difficulty, etc.)
     generateSongList(null, false);
@@ -700,7 +635,7 @@ class FreeplayState extends MusicBeatSubState
       // Gets all available difficulties for our character, via our available variations
       var difficultiesAvailable:Array<String> = song.data.listDifficulties(null, characterVariations);
 
-      return difficultiesAvailable.contains(currentDifficulty);
+      return difficultiesAvailable.contains(rememberedDifficulty);
     });
 
     if (onlyIfChanged)
@@ -1148,6 +1083,9 @@ class FreeplayState extends MusicBeatSubState
     // Get this character's transition delay, with a reasonable default.
     var transitionDelay:Float = currentCharacter.getFreeplayDJData()?.getCharSelectTransitionDelay() ?? 0.25;
 
+    // Some characters don't have higher difficulties for their songs
+    rememberedDifficulty = Constants.DEFAULT_DIFFICULTY;
+
     new FlxTimer().start(transitionDelay, _ -> {
       transitionToCharSelect();
     });
@@ -1398,6 +1336,16 @@ class FreeplayState extends MusicBeatSubState
             });
         }
       }
+    }
+
+    if (controls.FREEPLAY_JUMP_TO_TOP && !busy)
+    {
+      changeSelection(-curSelected);
+    }
+
+    if (controls.FREEPLAY_JUMP_TO_BOTTOM && !busy)
+    {
+      changeSelection(grpCapsules.countLiving() - curSelected - 1);
     }
 
     lerpScore = MathUtil.smoothLerp(lerpScore, intendedScore, elapsed, 0.5);
@@ -1660,9 +1608,25 @@ class FreeplayState extends MusicBeatSubState
       });
     }
 
-    if (accepted)
+    if (accepted) grpCapsules.members[curSelected].onConfirm();
+
+    if (FlxG.keys.pressed.R && !busy)
     {
-      grpCapsules.members[curSelected].onConfirm();
+      busy = true;
+      moveToResultsScreen();
+    }
+
+    if (controls.DEBUG_CHART && !busy)
+    {
+      /*
+        Doing it this way rather than passing the rememberedSongId
+        so that in the future, this can be made to load a random song when given this
+       */
+      var targetSong = grpCapsules.members[curSelected]?.freeplayData?.data.id ?? 'unknown';
+      FlxG.switchState(() -> new ChartEditorState(
+        {
+          targetSongId: targetSong,
+        }));
     }
   }
 
@@ -1697,7 +1661,7 @@ class FreeplayState extends MusicBeatSubState
 
     // Gets all available difficulties for our character, via our available variations
     var difficultiesAvailable:Array<String> = grpCapsules.members[curSelected].freeplayData?.data.listDifficulties(null,
-      characterVariations) ?? Constants.DEFAULT_DIFFICULTY_LIST;
+      characterVariations) ?? allDifficulties;
 
     var currentDifficultyIndex:Int = difficultiesAvailable.indexOf(currentDifficulty);
 
@@ -1885,6 +1849,50 @@ class FreeplayState extends MusicBeatSubState
     return controls;
   }
 
+  /**
+   * Adds a specified object to the `exitMovers` map.
+   * NOTE: You must specify your input as an array!
+   * Example: `addToExitMovers([sprite], x, y, speed, wait)`
+   *
+   * @param input The object to add.
+   * @param x The target x position of the object.
+   * @param y The target y position of the object.
+   * @param speed The speed the object should move at.
+   * @param wait Literally no idea what this does.
+   */
+  function addToExitMovers(input:Dynamic, x:Null<Float>, y:Null<Float>, speed:Null<Float>, wait:Null<Float>):Void
+  {
+    exitMovers.set(input,
+      {
+        x: x,
+        y: y,
+        speed: speed,
+        wait: wait
+      });
+  }
+
+  /**
+   * Adds a specified object to the `exitMoversCharSel` map.
+   * NOTE: You must specify your input as an array!
+   * Example: `addToExitMovers([sprite], x, y, speed, wait)`
+   *
+   * @param input The object to add.
+   * @param x The target x position of the object.
+   * @param y The target y position of the object.
+   * @param speed The speed the object should move at.
+   * @param wait Literally no idea what this does.
+   */
+  function addToExitMoversCharSel(input:Dynamic, x:Null<Float>, y:Null<Float>, speed:Null<Float>, wait:Null<Float>):Void
+  {
+    exitMoversCharSel.set(input,
+      {
+        x: x,
+        y: y,
+        speed: speed,
+        wait: wait
+      });
+  }
+
   function openInstrumentalList(cap:SongMenuItem, instrumentalIds:Array<String>):Void
   {
     busy = true;
@@ -1948,7 +1956,13 @@ class FreeplayState extends MusicBeatSubState
     }
 
     // Visual and audio effects.
-    FunkinSound.playOnce(Paths.sound('confirmMenu'));
+    if (currentCharacterId == 'pico')
+    {
+      // Gunshot SFX when confirming a song as pico, why not?
+      FunkinSound.playOnce(Paths.soundRandom('shot', 1, 4, 'weekend1'));
+    }
+    else
+      FunkinSound.playOnce(Paths.sound('confirmMenu'));
     if (dj != null) dj.confirm();
 
     grpCapsules.members[curSelected].forcePosition();
@@ -2081,6 +2095,9 @@ class FreeplayState extends MusicBeatSubState
 
       // Check if character-specific difficulty exists
       var songDifficulty:Null<SongDifficulty> = previewSong.getDifficulty(currentDifficulty, currentVariation);
+      var songMetadata:Null<SongMetadata> = null;
+      @:privateAccess
+      songMetadata = previewSong._metadata.get(currentVariation);
 
       var baseInstrumentalId:String = previewSong.getBaseInstrumentalId(currentDifficulty, songDifficulty?.variation ?? Constants.DEFAULT_VARIATION) ?? '';
       var altInstrumentalIds:Array<String> = previewSong.listAltInstrumentalIds(currentDifficulty,
@@ -2106,7 +2123,9 @@ class FreeplayState extends MusicBeatSubState
             {
               loadPartial: true,
               start: 0,
-              end: 0.2
+              end: 0.2,
+              startRaw: songMetadata?.playData?.previewStart ?? 0,
+              endRaw: songMetadata?.playData?.previewEnd ?? 15000
             },
           onLoad: function() {
             FlxG.sound.music.fadeIn(2, 0, 0.4);
@@ -2132,6 +2151,53 @@ class FreeplayState extends MusicBeatSubState
     result.persistentUpdate = false;
     result.persistentDraw = true;
     return result;
+  }
+
+  @:nullSafety(Off) // This shouldn't cause any issues, right?
+  function moveToResultsScreen():Void
+  {
+    var save = Save.instance;
+    var song = save.getSongScore(rememberedSongId, currentDifficulty);
+    if (song != null)
+    {
+      // Ok, so there's actually a score for this song on this difficulty
+      var songEntry = SongRegistry.instance.fetchEntry(rememberedSongId);
+      var songName = songEntry.songName;
+      var songArtist = songEntry.songArtist;
+      var songScore = song.score;
+      // persistentUpdate = false;
+
+      var talliesToUse = song.tallies;
+
+      var res:funkin.play.ResultState = new funkin.play.ResultState(
+        {
+          storyMode: false,
+          songId: rememberedSongId,
+          difficultyId: currentDifficulty,
+          characterId: rememberedCharacterId,
+          title: ('${songName} by ${songArtist}'),
+          prevScoreData: song,
+          scoreData:
+            {
+              score: songScore,
+              tallies:
+                {
+                  sick: talliesToUse.sick,
+                  good: talliesToUse.good,
+                  bad: talliesToUse.bad,
+                  shit: talliesToUse.shit,
+                  missed: talliesToUse.missed,
+                  combo: talliesToUse.combo,
+                  maxCombo: talliesToUse.maxCombo,
+                  totalNotesHit: talliesToUse.totalNotesHit,
+                  totalNotes: talliesToUse.totalNotes,
+                },
+            },
+          isNewHighscore: false
+        });
+      // this.persistentDraw = false;
+      openSubState(res);
+    }
   }
 }
 

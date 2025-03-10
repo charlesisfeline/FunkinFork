@@ -26,7 +26,7 @@ class ChartEditorImportExportHandler
   /**
    * Fetch's a song's existing chart and audio and loads it, replacing the current song.
    */
-  public static function loadSongAsTemplate(state:ChartEditorState, songId:String):Void
+  public static function loadSongAsTemplate(state:ChartEditorState, songId:String, targetSongDifficulty:String, targetSongVariation:String):Void
   {
     trace('===============START');
 
@@ -53,7 +53,7 @@ class ChartEditorImportExportHandler
       if (chartData != null) songChartData.set(variation, chartData);
     }
 
-    loadSong(state, songMetadata, songChartData);
+    loadSong(state, songMetadata, songChartData, new ChartManifestData(songId));
 
     state.sortChartData();
 
@@ -94,6 +94,14 @@ class ChartEditorImportExportHandler
         {
           trace('[WARN] Strange quantity of voice paths for difficulty ${difficultyId}: ${voiceList.length}');
         }
+        // Set the difficulty of the song if one was passed in the params, and it isn't the default
+        if (targetSongDifficulty != null
+          && targetSongDifficulty != state.selectedDifficulty
+          && targetSongDifficulty == diff.difficulty) state.selectedDifficulty = targetSongDifficulty;
+        // Set the variation of the song if one was passed in the params, and it isn't the default
+        if (targetSongVariation != null
+          && targetSongVariation != state.selectedVariation
+          && targetSongVariation == diff.variation) state.selectedVariation = targetSongVariation;
       }
     }
 
@@ -105,7 +113,11 @@ class ChartEditorImportExportHandler
 
     state.refreshToolbox(ChartEditorState.CHART_EDITOR_TOOLBOX_METADATA_LAYOUT);
 
-    state.success('Success', 'Loaded song (${rawSongMetadata[0].songName})');
+    // Actually state the correct variation loaded
+    for (metadata in rawSongMetadata)
+    {
+      if (metadata.variation == state.selectedVariation) state.success('Success', 'Loaded song (${metadata.songName})');
+    }
 
     trace('===============END');
   }
@@ -115,10 +127,14 @@ class ChartEditorImportExportHandler
    * @param newSongMetadata The song metadata to load.
    * @param newSongChartData The song chart data to load.
    */
-  public static function loadSong(state:ChartEditorState, newSongMetadata:Map<String, SongMetadata>, newSongChartData:Map<String, SongChartData>):Void
+  public static function loadSong(state:ChartEditorState, newSongMetadata:Map<String, SongMetadata>, newSongChartData:Map<String, SongChartData>, ?newSongManifestData:ChartManifestData):Void
   {
     state.songMetadata = newSongMetadata;
     state.songChartData = newSongChartData;
+    if (newSongManifestData != null)
+    {
+      state.songManifestData = newSongManifestData;
+    }
 
     Conductor.instance.forceBPM(null); // Disable the forced BPM.
     Conductor.instance.instrumentalOffset = state.currentInstrumentalOffset; // Loads from the metadata.
@@ -309,7 +325,7 @@ class ChartEditorImportExportHandler
     // Apply chart data.
     trace(songMetadatas);
     trace(songChartDatas);
-    loadSong(state, songMetadatas, songChartDatas);
+    loadSong(state, songMetadatas, songChartDatas, manifest);
 
     state.switchToCurrentInstrumental();
 
@@ -418,8 +434,7 @@ class ChartEditorImportExportHandler
     if (state.audioInstTrackData != null) zipEntries = zipEntries.concat(state.makeZIPEntriesFromInstrumentals());
     if (state.audioVocalTrackData != null) zipEntries = zipEntries.concat(state.makeZIPEntriesFromVocals());
 
-    var manifest:ChartManifestData = new ChartManifestData(state.currentSongId);
-    zipEntries.push(FileUtil.makeZIPEntry('manifest.json', manifest.serialize()));
+    zipEntries.push(FileUtil.makeZIPEntry('manifest.json', state.songManifestData.serialize()));
 
     trace('Exporting ${zipEntries.length} files to ZIP...');
 
