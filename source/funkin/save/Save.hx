@@ -1321,7 +1321,7 @@ typedef SaveDataFreeplay =
   /**
    * The user's last selected freeplay character.
    */
-  var freeplayCharacter:String; // Why do strings have to be saved in typedefs to load properly???
+  var freeplayCharacter:String; // Why do strings have to be saved in typedefs to load properly??? - Lasercar
 
 };
 
