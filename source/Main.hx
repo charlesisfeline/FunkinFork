@@ -71,16 +71,6 @@ class Main extends Sprite
       funkin.modding.PolymodErrorHandler.showAlert('Outdated Mods', description);
     }
 
-    if (funkin.modding.PolymodHandler.outdatedMods.length > 0)
-    {
-      var description:String = 'Required Version: ${funkin.modding.PolymodHandler.API_VERSION_RULE}\n';
-      for (mod in funkin.modding.PolymodHandler.outdatedMods)
-      {
-        description += '\n${mod.title} (v${mod.apiVersion}, id: ${mod.id})';
-      }
-      funkin.modding.PolymodErrorHandler.showAlert('Outdated Mods', description);
-    }
-
     if (stage != null)
     {
       init();
