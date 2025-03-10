@@ -1012,7 +1012,7 @@ class FileUtilSandboxed
   }
 
   /**
-    * Paths which should not be deleted or modified by scripts.
+   * Paths which should not be deleted or modified by scripts.
    */
   private static final PROTECTED:Array<String> = [
     '',
@@ -1143,9 +1143,9 @@ class FileUtilSandboxed
     FileUtil.browseFileReference(callback);
   }
 
-  public static function writeFileReference(path:String, data:String)
+  public static function writeFileReference(path:String, data:String, callback:String->Void)
   {
-    FileUtil.writeFileReference(path, data);
+    FileUtil.writeFileReference(path, data, callback);
   }
 
   public static function readJSONFromPath(path:String):Dynamic
