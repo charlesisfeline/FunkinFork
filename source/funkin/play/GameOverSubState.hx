@@ -143,8 +143,6 @@ class GameOverSubState extends MusicBeatSubState
     // Set up the visuals
     //
 
-    var playState = PlayState.instance;
-
     // Add a black background to the screen.
     var bg:FunkinSprite = new FunkinSprite().makeSolidColor(FlxG.width * 2, FlxG.height * 2, FlxColor.BLACK);
     // We make this transparent so that we can see the stage underneath during debugging,
@@ -467,6 +465,8 @@ class GameOverSubState extends MusicBeatSubState
     var onComplete:() -> Void = () -> {};
 
     if (gameOverSfx != null && isEnding) destroyGameOverSfx();
+
+    if (FlxG.sound.music != null) FlxG.sound.music.pause();
 
     if (isStarting)
     {
