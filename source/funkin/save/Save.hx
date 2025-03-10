@@ -87,8 +87,6 @@ class Save
 
       favoriteSongs: [],
 
-      freeplayCharacter: '',
-
       options:
         {
           // Reasonable defaults.
@@ -100,7 +98,6 @@ class Save
           debugDisplay: false,
           autoPause: true,
           autoFullscreen: false,
-          rememberFreeplayChar: true,
           inputOffset: 0,
           audioVisualOffset: 0,
           unlockedFramerate: false,
@@ -913,20 +910,6 @@ class Save
     }
   }
 
-  public function getFreeplayCharacter():String
-  {
-    trace('Getting last freeplay character ${data.freeplayCharacter}');
-    return data.freeplayCharacter;
-  }
-
-  public function setFreeplayCharacter(value:String):String
-  {
-    data.freeplayCharacter = value;
-    trace('Setting last freeplay character to: ${data.freeplayCharacter}');
-    flush();
-    return data.freeplayCharacter;
-  }
-
   public function getControls(playerId:Int, inputType:Device):Null<SaveControlsData>
   {
     switch (inputType)
@@ -1257,11 +1240,6 @@ typedef RawSaveData =
    */
   var favoriteSongs:Array<String>;
 
-  /**
-   * The user's last selected freeplay character.
-   */
-  var freeplayCharacter:String;
-
   var mods:SaveDataMods;
 
   /**
@@ -1422,12 +1400,6 @@ typedef SaveDataOptions =
    * @default `true`
    */
   var autoFullscreen:Bool;
-
-  /**
-   * If enabled, the game will enter freeplay with the last character you had selected after exiting freeplay. (Look, it might as well be an option ok?) - Lasercar
-   * @default `true`
-   */
-  var rememberFreeplayChar:Bool;
 
   /**
    * Offset the user's inputs by this many ms.

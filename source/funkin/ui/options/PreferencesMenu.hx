@@ -117,9 +117,6 @@ class PreferencesMenu extends Page
     createPrefItemCheckbox('Launch in Fullscreen', 'Automatically launch the game in fullscreen on startup', function(value:Bool):Void {
       Preferences.autoFullscreen = value;
     }, Preferences.autoFullscreen);
-    createPrefItemCheckbox('Remember Freeplay Character', 'Enable to have Freeplay remember the character you previously selected', function(value:Bool):Void {
-      Preferences.rememberFreeplayChar = value;
-    }, Preferences.rememberFreeplayChar);
 
     #if web
     createPrefItemCheckbox('Unlocked Framerate', 'Enable to unlock the framerate', function(value:Bool):Void {
