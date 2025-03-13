@@ -139,6 +139,13 @@ class ChartEditorImportExportHandler
     }
     state.audioVocalTrackGroup.stop();
     state.audioVocalTrackGroup.clear();
+
+    // Clear the undo and redo history
+    // Hmm, I wonder if this could instead be saved somehow (or if it even should be saved)
+    // maybe put this stuff in a file in the zip?
+    state.undoHistory = [];
+    state.redoHistory = [];
+    state.commandHistoryDirty = true;
   }
 
   /**
