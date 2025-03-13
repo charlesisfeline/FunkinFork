@@ -1434,13 +1434,13 @@ class PlayState extends MusicBeatSubState
       // activeNotes.sort(SortUtil.byStrumtime, FlxSort.DESCENDING);
     }
 
-    if (FlxG.sound.music != null)
+    if (FlxG.sound.music != null && FlxG.sound.music.time > 0)
     {
       var correctSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition - Conductor.instance.combinedOffset));
       var playerVoicesError:Float = 0;
       var opponentVoicesError:Float = 0;
 
-      if (vocals != null)
+      if (vocals != null && vocals.time > 0)
       {
         @:privateAccess // todo: maybe make the groups public :thinking:
         {
@@ -2107,7 +2107,7 @@ class PlayState extends MusicBeatSubState
      */
   function resyncVocals():Void
   {
-    if (vocals == null) return;
+    if (vocals == null || vocals.time < 0) return;
 
     // Skip this if the music is paused (GameOver, Pause menu, start-of-song offset, etc.)
     if (!(FlxG.sound.music?.playing ?? false)) return;
