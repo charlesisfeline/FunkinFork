@@ -932,9 +932,17 @@ class PlayState extends MusicBeatSubState
       {
         Conductor.instance.formatOffset = 0.0;
       }
+      
       // Pass the music time instead if the pitch is different, aka, the song is lower or faster
       Conductor.instance.update((FlxG.sound.music.pitch != 1) ? FlxG.sound.music.time + elapsed * 1000 : (Conductor.instance.songPosition + elapsed * 1000),
         false); // Normal conductor update.
+
+      // If, after updating the conductor, the instrumental has finished, end the song immediately.
+      // This helps prevent a major bug where the level suddenly loops back to the start or middle.
+      if (Conductor.instance.songPosition >= (FlxG.sound.music.endTime ?? FlxG.sound.music.length))
+      {
+        if (mayPauseGame) endSong(skipEndingTransition);
+      }
     }
 
     var androidPause:Bool = false;
@@ -1537,7 +1545,7 @@ class PlayState extends MusicBeatSubState
       var opponentVoicesError:Float = 0;
       var instrumentalError:Float = FlxG.sound.music.time - correctInstSync;
 
-      if (vocals != null && vocals.time > 0)
+      if (vocals != null && vocals.playing && vocals.time > 0)
       {
         @:privateAccess // todo: maybe make the groups public :thinking:
         {
@@ -2201,7 +2209,7 @@ class PlayState extends MusicBeatSubState
     }
 
     FlxG.sound.music.onComplete = function() {
-      endSong(skipEndingTransition);
+      if (mayPauseGame) endSong(skipEndingTransition);
     };
     // A negative instrumental offset means the song skips the first few milliseconds of the track.
     // This just gets added into the startTimestamp behavior so we don't need to do anything extra.
