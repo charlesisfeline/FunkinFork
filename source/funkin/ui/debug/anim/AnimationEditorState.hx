@@ -622,7 +622,7 @@ class AnimationEditorState extends MusicBeatState
       _file.addEventListener(Event.COMPLETE, onSaveComplete);
       _file.addEventListener(Event.CANCEL, onSaveCancel);
       _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-      _file.save(saveString,);
+      _file.save(saveString, fileName);
     }
   }
 
