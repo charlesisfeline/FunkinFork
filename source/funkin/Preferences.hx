@@ -37,6 +37,38 @@ class Preferences
   }
 
   /**
+   * V-Sync
+   * @default false
+   */
+  public static var vsync(get, set):Bool;
+
+  static function get_vsync():Bool
+  {
+    #if (web || flash)
+    return false;
+    #else
+    return Save?.instance?.options?.vsync ?? FlxG.stage.window.vsync;
+    #end
+  }
+
+  static function set_vsync(value:Bool):Bool
+  {
+    #if (web || flash)
+    return false;
+    #else
+    var save:Save = Save.instance;
+    save.options.vsync = value;
+    save.flush();
+    // TODO: Do we really don't want to overwrite the saved framerate?
+    var refreshRate:Int = FlxG.stage.window.displayMode.refreshRate;
+    if (value && framerate > refreshRate) FlxG.updateFramerate = FlxG.drawFramerate = refreshRate;
+    else
+      framerate = framerate; // Re-apply FPS if disabling
+    return FlxG.stage.window.vsync = value;
+    #end
+  }
+
+  /**
    * Whether some particularly foul language is displayed.
    * @default `true`
    */
