@@ -9,7 +9,7 @@ This game was made with love to Newgrounds and its community. Extra love to Tom 
 
 # Getting Started
 
-**PLEASE USE THE LINKS ABOVE IF YOU JUST WANT TO PLAY THE GAME**
+**PLEASE USE THE LINKS ABOVE IF YOU JUST WANT TO PLAY THE GAME!**
 
 To learn how to install the necessary dependencies and compile the game from source, please follow our [Compiling Guide](/docs/COMPILING.md).
 
