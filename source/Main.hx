@@ -59,7 +59,11 @@ class Main extends Sprite
     funkin.util.logging.AnsiTrace.traceBF();
 
     // Load mods to override assets.
+    #if FEATURE_MOD_MENU
     funkin.modding.PolymodHandler.loadEnabledMods();
+    #else
+    funkin.modding.PolymodHandler.loadAllMods();
+    #end
 
     if (funkin.modding.PolymodHandler.outdatedMods.length > 0)
     {

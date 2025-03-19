@@ -3,7 +3,7 @@
     {
       "name": "FlxPartialSound",
       "type": "git",
-      "dir": null, 
+      "dir": null,
       "ref": "a1eab7b9bf507b87200a3341719054fe427f3b15",
       "url": "https://github.com/FunkinCrew/FlxPartialSound.git"
     },
@@ -81,11 +81,9 @@
       "url": "https://github.com/FunkinCrew/hscript"
     },
     {
-      "name": "hxCodec",
-      "type": "git",
-      "dir": null,
-      "ref": "61b98a7a353b7f529a8fec84ed9afc919a2dffdd",
-      "url": "https://github.com/FunkinCrew/hxCodec"
+      "name": "hxvlc",
+      "type": "haxelib",
+      "version": "2.0.1"
     },
     {
       "name": "hxcpp",

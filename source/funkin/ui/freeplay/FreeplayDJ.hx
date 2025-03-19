@@ -101,18 +101,15 @@ class FreeplayDJ extends FlxAtlasSprite
           playFlashAnimation(animPrefix, true, false, true);
         }
 
-        if (getCurrentAnimation() == animPrefix && this.isLoopComplete())
-        {
-          if (timeIdling >= IDLE_EGG_PERIOD && !seenIdleEasterEgg)
-          {
-            currentState = IdleEasterEgg;
-          }
-          else if (timeIdling >= IDLE_CARTOON_PERIOD)
-          {
-            currentState = Cartoon;
-          }
-        }
         timeIdling += elapsed;
+
+        // it was this.isLoopComplete()'s fault ok
+        if (timeIdling > IDLE_EGG_PERIOD && !seenIdleEasterEgg) currentState = AfkIdle;
+        else if (timeIdling > IDLE_CARTOON_PERIOD && characterId == 'bf')
+        {
+          // for bf only!
+          currentState = Cartoon;
+        }
       case NewUnlock:
         var animPrefix = playableCharData.getAnimationPrefix('newUnlock');
         if (!hasAnimation(animPrefix))
@@ -123,6 +120,8 @@ class FreeplayDJ extends FlxAtlasSprite
         {
           playFlashAnimation(animPrefix, true, false, true);
         }
+        timeIdling = 0;
+
       case Confirm:
         var animPrefix = playableCharData.getAnimationPrefix('confirm');
         if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
@@ -130,6 +129,8 @@ class FreeplayDJ extends FlxAtlasSprite
       case FistPumpIntro:
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
+
+        timeIdling = 0;
 
         if (getCurrentAnimation() == animPrefixA)
         {
@@ -157,6 +158,8 @@ class FreeplayDJ extends FlxAtlasSprite
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
 
+        timeIdling = 0;
+
         if (getCurrentAnimation() == animPrefixA)
         {
           var endFrame = playableCharData.getFistPumpLoopEndFrame();
@@ -181,12 +184,9 @@ class FreeplayDJ extends FlxAtlasSprite
 
       case IdleEasterEgg:
         var animPrefix = playableCharData.getAnimationPrefix('idleEasterEgg');
-        if (getCurrentAnimation() != animPrefix)
-        {
-          onIdleEasterEgg.dispatch();
-          playFlashAnimation(animPrefix, false);
-          seenIdleEasterEgg = true;
-        }
+        if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
+        seenIdleEasterEgg = true;
+        onIdleEasterEgg.dispatch();
         timeIdling = 0;
       case Cartoon:
         var animPrefix = playableCharData.getAnimationPrefix('cartoon');

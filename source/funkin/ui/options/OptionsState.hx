@@ -195,7 +195,7 @@ class OptionsMenu extends Page
         #end
       });
 
-    #if !web
+    #if FEATURE_MOD_MENU
     createItem("MODS", () -> FlxG.state.openSubState(new funkin.ui.debug.mods.ModsSelectState()));
     #end
 
