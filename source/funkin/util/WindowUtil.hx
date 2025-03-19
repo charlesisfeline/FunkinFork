@@ -138,6 +138,12 @@ class WindowUtil
     });
     #end
 
+    #if hl
+    openfl.Lib.current.stage.addEventListener(openfl.events.Event.EXIT_FRAME, (e:openfl.events.Event) -> {
+      hl.Api.checkReload();
+    });
+    #end
+
     openfl.Lib.current.stage.addEventListener(openfl.events.KeyboardEvent.KEY_DOWN, (e:openfl.events.KeyboardEvent) -> {
       if (haxe.ui.focus.FocusManager.instance.focus != null)
       {
@@ -189,7 +195,7 @@ class WindowUtil
   /**
    * Enables or disables dark mode support for the title bar.
    * Only works on Windows.
-   * 
+   *
    * @param enable Whether to enable or disable dark mode support.
    * @param instant Whether to skip the transition tween.
    */
@@ -227,7 +233,8 @@ class WindowUtil
    * The color of the window title bar. If `null`, the default is used.
    * Only works on Windows.
    */
-  public static var windowBarColor(default, set):Null<FlxColor> = null;  
+  public static var windowBarColor(default, set):Null<FlxColor> = null;
+
   public static function set_windowBarColor(value:Null<FlxColor>):Null<FlxColor>
   {
     #if (cpp && windows)
@@ -252,6 +259,7 @@ class WindowUtil
    * Only works on Windows.
    */
   public static var windowTextColor(default, set):Null<FlxColor> = null;
+
   public static function set_windowTextColor(value:Null<FlxColor>):Null<FlxColor>
   {
     #if (cpp && windows)
@@ -276,6 +284,7 @@ class WindowUtil
    * Only works on Windows.
    */
   public static var windowBorderColor(default, set):Null<FlxColor> = null;
+
   public static function set_windowBorderColor(value:Null<FlxColor>):Null<FlxColor>
   {
     #if (cpp && windows)
