@@ -82,6 +82,19 @@ class ResultState extends MusicBeatSubState
   final cameraScroll:FunkinCamera;
   final cameraEverything:FunkinCamera;
 
+  /**
+   * Whether the game is currently in Practice Mode.
+   * If true, player will not lose gain or lose score from notes.
+   */
+  var isPracticeMode(get, never):Bool;
+
+  function get_isPracticeMode():Bool
+  {
+    return PlayState.instance.isPracticeMode;
+  }
+
+
+
   public function new(params:ResultsStateParams)
   {
     super();
@@ -728,6 +741,17 @@ class ResultState extends MusicBeatSubState
       speedOfTween.x -= 0.1;
     }
 
+    if (controls.RESET)
+    {
+      if (PlayState.instance == null) return; // Do nothing - there's no playstate to return to
+      FlxTimer.globalManager.clear();
+      FlxTween.globalManager.clear();
+      if (introMusicAudio != null) introMusicAudio.stop();
+      // if (resultsMusic != null) resultsMusic.stop();
+      this.close();
+      return;
+    }
+
     if (controls.PAUSE || controls.ACCEPT)
     {
       if (introMusicAudio != null)
@@ -817,7 +841,7 @@ class ResultState extends MusicBeatSubState
                     newRank: rank,
                     songId: params.songId,
                     difficultyId: params.difficultyId,
-                    playRankAnim: true
+                    playRankAnim: (isPracticeMode == true) ? false : true
                   }
               }
             });

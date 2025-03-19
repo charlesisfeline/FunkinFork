@@ -75,7 +75,7 @@ class DebugBoundingState extends FlxState
   function get_haxeUIFocused():Bool
   {
     // get the screen position, according to the HUD camera, temp default to FlxG.camera juuust in case?
-    var hudMousePos:FlxPoint = FlxG.mouse.getScreenPosition(hudCam ?? FlxG.camera);
+    var hudMousePos:FlxPoint = FlxG.mouse.getViewPosition(hudCam ?? FlxG.camera);
     return Screen.instance.hasSolidComponentUnderPoint(hudMousePos.x, hudMousePos.y);
   }
 
@@ -576,7 +576,7 @@ class DebugBoundingState extends FlxState
       _file.addEventListener(Event.COMPLETE, onSaveComplete);
       _file.addEventListener(Event.CANCEL, onSaveCancel);
       _file.addEventListener(IOErrorEvent.IO_ERROR, onSaveError);
-      _file.save(saveString,);
+      _file.save(saveString, fileName);
     }
   }
 

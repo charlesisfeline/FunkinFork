@@ -49,7 +49,6 @@ import funkin.play.song.Song;
 import funkin.play.stage.Stage;
 import funkin.save.Save;
 import funkin.ui.debug.charting.ChartEditorState;
-import funkin.ui.debug.stage.StageOffsetSubState;
 import funkin.ui.mainmenu.MainMenuState;
 import funkin.ui.MusicBeatSubState;
 import funkin.ui.transition.LoadingState;
@@ -57,6 +56,9 @@ import funkin.util.SerializerUtil;
 import haxe.Int64;
 #if FEATURE_DISCORD_RPC
 import funkin.api.discord.DiscordClient;
+#end
+#if sys
+import funkin.util.ThreadUtil;
 #end
 
 /**
@@ -197,7 +199,7 @@ class PlayState extends MusicBeatSubState
    * The player's current score.
    * TODO: Move this to its own class.
    */
-  public var songScore:Int = 0;
+  public var songScore:Float = 0;
 
   /**
    * Start at this point in the song once the countdown is done.
@@ -574,6 +576,17 @@ class PlayState extends MusicBeatSubState
     return FlxG?.sound?.music?.length;
   }
 
+  /**
+   * The player's current score, as an integer.
+   * TODO: Move songScore to its own class with this functionality.
+   */
+  var songScoreInt(get, never):Int;
+
+  function get_songScoreInt():Int
+  {
+    return Std.int(songScore);
+  }
+
   // TODO: Refactor or document
   var generatedMusic:Bool = false;
 
@@ -679,7 +692,7 @@ class PlayState extends MusicBeatSubState
     }
 
     Conductor.instance.mapTimeChanges(currentChart.timeChanges);
-    var pre:Float = (Conductor.instance.beatLengthMs * -5) + startTimestamp;
+    var pre:Float = (Conductor.instance.beatLengthMs * -5) + startTimestamp + Conductor.instance.combinedOffset;
 
     trace('Attempting to start at ' + pre);
 
@@ -713,6 +726,10 @@ class PlayState extends MusicBeatSubState
 
     initPreciseInputs();
 
+    #if sys
+    initThreads();
+    #end
+
     FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
     // The song is loaded and in the process of starting.
@@ -740,10 +757,10 @@ class PlayState extends MusicBeatSubState
     rightWatermarkText.cameras = [camHUD];
 
     // Initialize some debug stuff.
-    #if FEATURE_DEBUG_FUNCTIONS
     // Display the version number (and git commit hash) in the bottom right corner.
     this.rightWatermarkText.text = Constants.VERSION;
 
+    #if FEATURE_DEBUG_FUNCTIONS
     FlxG.console.registerObject('playState', this);
     #end
 
@@ -840,9 +857,9 @@ class PlayState extends MusicBeatSubState
       // Reset music properly.
       if (FlxG.sound.music != null)
       {
-        FlxG.sound.music.time = startTimestamp - Conductor.instance.combinedOffset;
-        FlxG.sound.music.pitch = playbackRate;
         FlxG.sound.music.pause();
+        FlxG.sound.music.time = startTimestamp - Conductor.instance.instrumentalOffset;
+        FlxG.sound.music.pitch = playbackRate;
       }
 
       if (!overrideMusic)
@@ -857,7 +874,7 @@ class PlayState extends MusicBeatSubState
         }
       }
       vocals.pause();
-      vocals.time = 0 - Conductor.instance.combinedOffset;
+      vocals.time = -Conductor.instance.instrumentalOffset;
 
       if (FlxG.sound.music != null) FlxG.sound.music.volume = 1;
       vocals.volume = 1;
@@ -915,8 +932,10 @@ class PlayState extends MusicBeatSubState
       {
         Conductor.instance.formatOffset = 0.0;
       }
-
-      Conductor.instance.update(Conductor.instance.songPosition + elapsed * 1000, false); // Normal conductor update.
+      
+      // Pass the music time instead if the pitch is different, aka, the song is lower or faster
+      Conductor.instance.update((FlxG.sound.music.pitch != 1) ? FlxG.sound.music.time + elapsed * 1000 : (Conductor.instance.songPosition + elapsed * 1000),
+        false); // Normal conductor update.
 
       // If, after updating the conductor, the instrumental has finished, end the song immediately.
       // This helps prevent a major bug where the level suddenly loops back to the start or middle.
@@ -1121,8 +1140,8 @@ class PlayState extends MusicBeatSubState
 
     if (!isMinimalMode)
     {
-      iconP1.updatePosition();
-      iconP2.updatePosition();
+      if (iconP1 != null) iconP1.updatePosition();
+      if (iconP1 != null) iconP2.updatePosition();
     }
 
     // Transition to the game over substate.
@@ -1176,6 +1195,9 @@ class PlayState extends MusicBeatSubState
 
     // super.dispatchEvent(event) dispatches event to module scripts.
     super.dispatchEvent(event);
+
+    // Dispatch event to event notes
+    if (songEvents != null && songEvents.length > 0) SongEventRegistry.callEvent(songEvents, event);
 
     // Dispatch event to note kind scripts
     NoteKindManager.callEvent(event);
@@ -1322,6 +1344,80 @@ class PlayState extends MusicBeatSubState
 
       justUnpaused = true;
     }
+    else if (Std.isOfType(subState, ResultState))
+    {
+      if (PlayStatePlaylist.isStoryMode)
+      {
+        // Load the first song if in story mode
+        var currentLevel:funkin.ui.story.Level = funkin.data.story.level.LevelRegistry.instance.fetchEntry(PlayStatePlaylist.campaignId);
+
+        PlayStatePlaylist.playlistSongIds = currentLevel.getSongs();
+
+        var targetSongId:String = PlayStatePlaylist.playlistSongIds.shift();
+
+        var targetSong:Song = SongRegistry.instance.fetchEntry(targetSongId);
+        var targetVariation:String = currentVariation;
+        if (!targetSong.hasDifficulty(PlayStatePlaylist.campaignDifficulty, currentVariation))
+        {
+          targetVariation = targetSong.getFirstValidVariation(PlayStatePlaylist.campaignDifficulty) ?? Constants.DEFAULT_VARIATION;
+        }
+        this.remove(currentStage);
+        LoadingState.loadPlayState(
+          {
+            targetSong: targetSong,
+            targetDifficulty: PlayStatePlaylist.campaignDifficulty,
+            targetVariation: targetVariation,
+            cameraFollowPoint: cameraFollowPoint.getPosition(),
+          });
+      }
+      else
+      {
+        needsReset = true;
+        mayPauseGame = true;
+        // Reset the cameras and UI, otherwise stuff breaks idk
+        initCameras();
+        initHealthBar();
+        initStrumlines();
+        initPopups();
+
+        // Ugh, I have to copy this code out of the initcharacters for the healthbar and icons
+
+        var currentCharacterData:SongCharacterData = currentChart.characters;
+
+        var dad:BaseCharacter = CharacterDataParser.fetchCharacter(currentCharacterData.opponent);
+
+        if (dad != null)
+        {
+          //
+          // OPPONENT HEALTH ICON
+          //
+          iconP2 = new HealthIcon('dad', 1);
+          iconP2.y = healthBar.y - (iconP2.height / 2);
+          dad.initHealthIcon(true); // Apply the character ID here
+          iconP2.zIndex = 850;
+          add(iconP2);
+          iconP2.cameras = [camHUD];
+        }
+
+        var boyfriend:BaseCharacter = CharacterDataParser.fetchCharacter(currentCharacterData.player);
+
+        if (boyfriend != null)
+        {
+          //
+          // PLAYER HEALTH ICON
+          //
+          iconP1 = new HealthIcon('bf', 0);
+          iconP1.y = healthBar.y - (iconP1.height / 2);
+          boyfriend.initHealthIcon(false); // Apply the character ID here
+          iconP1.zIndex = 850;
+          add(iconP1);
+          iconP1.cameras = [camHUD];
+        }
+
+        leftWatermarkText.cameras = [camHUD];
+        rightWatermarkText.cameras = [camHUD];
+      }
+    }
     else if (Std.isOfType(subState, Transition))
     {
       // Do nothing.
@@ -1441,41 +1537,35 @@ class PlayState extends MusicBeatSubState
       // activeNotes.sort(SortUtil.byStrumtime, FlxSort.DESCENDING);
     }
 
-    if (FlxG.sound.music != null)
+    if (FlxG.sound.music != null && FlxG.sound.music.time > 0)
     {
-      var correctSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition - Conductor.instance.combinedOffset));
+      var correctSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, FlxG.sound.music.time));
+      var correctInstSync:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition));
       var playerVoicesError:Float = 0;
       var opponentVoicesError:Float = 0;
+      var instrumentalError:Float = FlxG.sound.music.time - correctInstSync;
 
-      if (vocals != null && vocals.playing)
+      if (vocals != null && vocals.playing && vocals.time > 0)
       {
         @:privateAccess // todo: maybe make the groups public :thinking:
         {
-          vocals.playerVoices.forEachAlive(function(voice:FunkinSound) {
+          vocals.playerVoices.forEachAlive((voice:FunkinSound) -> {
             var currentRawVoiceTime:Float = voice.time + vocals.playerVoicesOffset;
             if (Math.abs(currentRawVoiceTime - correctSync) > Math.abs(playerVoicesError)) playerVoicesError = currentRawVoiceTime - correctSync;
           });
 
-          vocals.opponentVoices.forEachAlive(function(voice:FunkinSound) {
+          vocals.opponentVoices.forEachAlive((voice:FunkinSound) -> {
             var currentRawVoiceTime:Float = voice.time + vocals.opponentVoicesOffset;
             if (Math.abs(currentRawVoiceTime - correctSync) > Math.abs(opponentVoicesError)) opponentVoicesError = currentRawVoiceTime - correctSync;
           });
         }
       }
 
-      if (!startingSong
-        && (Math.abs(FlxG.sound.music.time - correctSync) > 100
-          || Math.abs(playerVoicesError) > 100
-          || Math.abs(opponentVoicesError) > 100))
+      if (!startingSong && (Math.abs(instrumentalError) > 100 || Math.abs(playerVoicesError) > 100 || Math.abs(opponentVoicesError) > 100))
       {
         trace("VOCALS NEED RESYNC");
-        if (vocals != null)
-        {
-          trace(playerVoicesError);
-          trace(opponentVoicesError);
-        }
-        trace(FlxG.sound.music.time);
-        trace(correctSync);
+        if (vocals != null) trace(playerVoicesError + " - " + opponentVoicesError);
+        trace(FlxG.sound.music.time + " | " + correctSync);
         resyncVocals();
       }
     }
@@ -1591,11 +1681,15 @@ class PlayState extends MusicBeatSubState
     healthBar.scrollFactor.set();
     healthBar.createFilledBar(Constants.COLOR_HEALTH_BAR_RED, Constants.COLOR_HEALTH_BAR_GREEN);
     healthBar.zIndex = 801;
+    // One division for each pixel of the bar's width ensures maximum bar smoothness.
+    // This is better looking, and syncs with the lerped icon movement better.
+    // This can be slightly more heavy on the CPU, though, so if lower end device performance options are added, maybe make them affect this?
+    healthBar.numDivisions = Std.int(healthBarBG.width - 8);
     add(healthBar);
 
     // The score text below the health bar.
     scoreText = new FlxText(healthBarBG.x + healthBarBG.width - 190, healthBarBG.y + 30, 0, '', 20);
-    scoreText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+    scoreText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE_FAST, FlxColor.BLACK);
     scoreText.scrollFactor.set();
     scoreText.zIndex = 802;
     add(scoreText);
@@ -1782,6 +1876,55 @@ class PlayState extends MusicBeatSubState
       currentStage.refresh();
     }
   }
+
+  #if sys
+  /**
+     * Whether the main thread of this application is frozen by a prolonged lag or the window's title bar being dragged.
+     */
+  var isMainThreadFrozen:Bool = false;
+
+  /**
+     * Setups the Thread to check if the game has been dragged by the window's title bar.
+     */
+  function initThreads()
+  {
+    ThreadUtil.createLoopingThread("playStateWindow", function() {
+      var lostFocus:Bool = false;
+      @:privateAccess
+      lostFocus = FlxG.game._lostFocus;
+
+      if (!initialized || health <= Constants.HEALTH_MIN || isGamePaused || !generatedMusic || criticalFailure || lostFocus || justUnpaused) return;
+
+      if (isMainThreadFrozen)
+      {
+        trace("The game is frozen! Pausing.");
+
+        persistentUpdate = false;
+        persistentDraw = true;
+
+        var pauseSubState:FlxSubState = new PauseSubState({mode: isChartingMode ? Charting : Standard});
+
+        FlxTransitionableState.skipNextTransIn = true;
+        FlxTransitionableState.skipNextTransOut = true;
+        pauseSubState.camera = camCutscene;
+        openSubState(pauseSubState);
+      }
+      else
+      {
+        // trace("Not frozen! We resetting and checking again!");
+      }
+
+      isMainThreadFrozen = true;
+    }, 1, 0.5);
+
+    FlxG.signals.preUpdate.add(checkMainThreadActivity);
+  }
+
+  function checkMainThreadActivity()
+  {
+    isMainThreadFrozen = false;
+  }
+  #end
 
   /**
      * Constructs the strumlines for each player.
@@ -2070,7 +2213,8 @@ class PlayState extends MusicBeatSubState
     };
     // A negative instrumental offset means the song skips the first few milliseconds of the track.
     // This just gets added into the startTimestamp behavior so we don't need to do anything extra.
-    FlxG.sound.music.play(true, Math.max(0, startTimestamp - Conductor.instance.combinedOffset));
+    FlxG.sound.music.pause();
+    FlxG.sound.music.time = Math.max(0, startTimestamp - Conductor.instance.instrumentalOffset);
     FlxG.sound.music.pitch = playbackRate;
 
     // Prevent the volume from being wrong.
@@ -2079,13 +2223,15 @@ class PlayState extends MusicBeatSubState
 
     trace('Playing vocals...');
     add(vocals);
-    vocals.play();
+
     vocals.volume = 1.0;
     vocals.pitch = playbackRate;
     vocals.time = FlxG.sound.music.time;
     // trace('${FlxG.sound.music.time}');
     // trace('${vocals.time}');
-    resyncVocals();
+
+    FlxG.sound.music.play();
+    vocals.play();
 
     #if FEATURE_DISCORD_RPC
     // Updating Discord Rich Presence (with Time Left)
@@ -2114,13 +2260,15 @@ class PlayState extends MusicBeatSubState
      */
   function resyncVocals():Void
   {
-    if (vocals == null) return;
+    if (vocals == null || vocals.time < 0) return;
 
     // Skip this if the music is paused (GameOver, Pause menu, start-of-song offset, etc.)
     if (!(FlxG.sound.music?.playing ?? false)) return;
 
-    var timeToPlayAt:Float = Math.min(FlxG.sound.music.length, Math.max(0, Conductor.instance.songPosition - Conductor.instance.combinedOffset));
+    var timeToPlayAt:Float = Math.min(FlxG.sound.music.length,
+      Math.max(Math.min(Conductor.instance.combinedOffset, 0), Conductor.instance.songPosition) - Conductor.instance.combinedOffset);
     trace('Resyncing vocals to ${timeToPlayAt}');
+
     FlxG.sound.music.pause();
     vocals.pause();
 
@@ -2145,7 +2293,7 @@ class PlayState extends MusicBeatSubState
     {
       // TODO: Add an option for this maybe?
       var commaSeparated:Bool = true;
-      scoreText.text = 'Score: ${FlxStringUtil.formatMoney(songScore, false, commaSeparated)}';
+      scoreText.text = 'Score: ${FlxStringUtil.formatMoney(songScoreInt, false, commaSeparated)}';
     }
   }
 
@@ -2169,7 +2317,12 @@ class PlayState extends MusicBeatSubState
      */
   function onKeyPress(event:PreciseInputEvent):Void
   {
-    if (isGamePaused) return;
+    if (isGamePaused)
+    {
+      // The player released and repressed the key, so pop the release input
+      inputReleaseQueue.pop();
+      return;
+    }
 
     // Do the minimal possible work here.
     inputPressQueue.push(event);
@@ -2180,8 +2333,6 @@ class PlayState extends MusicBeatSubState
      */
   function onKeyRelease(event:PreciseInputEvent):Void
   {
-    if (isGamePaused) return;
-
     // Do the minimal possible work here.
     inputReleaseQueue.push(event);
   }
@@ -2375,7 +2526,6 @@ class PlayState extends MusicBeatSubState
     }
 
     // Process hold notes on the player's side.
-    // This handles scoring so we don't need it on the opponent's side.
     for (holdNote in playerStrumline.holdNotes.members)
     {
       if (holdNote == null || !holdNote.alive) continue;
@@ -2383,13 +2533,6 @@ class PlayState extends MusicBeatSubState
       // While the hold note is being hit, and there is length on the hold note...
       if (holdNote.hitNote && !holdNote.missedNote && holdNote.sustainLength > 0)
       {
-        // Grant the player health.
-        if (!isBotPlayMode)
-        {
-          health += Constants.HEALTH_HOLD_BONUS_PER_SECOND * elapsed;
-          songScore += Std.int(Constants.SCORE_HOLD_BONUS_PER_SECOND * elapsed);
-        }
-
         // Make sure the player keeps singing while the note is held by the bot.
         if (isBotPlayMode && currentStage != null && currentStage.getBoyfriend() != null && currentStage.getBoyfriend().isSinging())
         {
@@ -2522,6 +2665,20 @@ class PlayState extends MusicBeatSubState
     }
   }
 
+  public function sustainHit(note:SustainTrail, lastLength:Float):Void
+  {
+    // Don't grant sustain bonuses on botplay.
+    // TODO: Maybe make this scriptable? Performance is a concern, though.
+    if (isBotPlayMode) return;
+
+    // Calculate song score and health gain based on sustain amount eaten, not by elapsed --
+    // This is to avoid inconsistency with sustain scores. Previously handled by the animation handling...
+    // NOTE: Having PlayState stuff be handled by the strumline is weird. Maybe find a way around that?
+    var processed = Math.max(Math.min(lastLength, note.fullSustainLength) - Math.max(note.sustainLength, 0), 0) * 0.001;
+    health += Constants.HEALTH_HOLD_BONUS_PER_SECOND * processed;
+    songScore += Constants.SCORE_HOLD_BONUS_PER_SECOND * processed;
+  }
+
   function goodNoteHit(note:NoteSprite, input:PreciseInputEvent):Void
   {
     // Calculate the input latency (do this as late as possible).
@@ -2620,7 +2777,6 @@ class PlayState extends MusicBeatSubState
           });
       }
     }
-    vocals.playerVolume = 0;
 
     applyScore(-10, 'miss', healthChange, true);
 
@@ -2681,7 +2837,6 @@ class PlayState extends MusicBeatSubState
 
     if (event.playSound)
     {
-      vocals.playerVolume = 0;
       FunkinSound.playOnce(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
     }
   }
@@ -2691,17 +2846,6 @@ class PlayState extends MusicBeatSubState
      */
   function debugKeyShit():Void
   {
-    #if FEATURE_STAGE_EDITOR
-    // Open the stage editor overlaying the current state.
-    if (controls.DEBUG_STAGE)
-    {
-      // hack for HaxeUI generation, doesn't work unless persistentUpdate is false at state creation!!
-      disableKeys = true;
-      persistentUpdate = false;
-      openSubState(new StageOffsetSubState());
-    }
-    #end
-
     #if FEATURE_CHART_EDITOR
     // Redirect to the chart editor playing the current song.
     if (controls.DEBUG_CHART)
@@ -2720,6 +2864,8 @@ class PlayState extends MusicBeatSubState
         FlxG.switchState(() -> new ChartEditorState(
           {
             targetSongId: currentSong.id,
+            targetSongDifficulty: currentDifficulty,
+            targetSongVariation: currentVariation,
           }));
       }
     }
@@ -2749,6 +2895,16 @@ class PlayState extends MusicBeatSubState
     // PAGEDOWN: Skip backward two section. Doesn't replace notes.
     // SHIFT+PAGEDOWN: Skip backward twenty sections.
     if (FlxG.keys.justPressed.PAGEDOWN) changeSection(FlxG.keys.pressed.SHIFT ? -20 : -2);
+    #else
+    if (isChartingMode)
+    {
+      // PAGEUP: Skip forward two sections.
+      // SHIFT+PAGEUP: Skip forward twenty sections.
+      if (FlxG.keys.justPressed.PAGEUP) changeSection(FlxG.keys.pressed.SHIFT ? 20 : 2);
+      // PAGEDOWN: Skip backward two section. Doesn't replace notes.
+      // SHIFT+PAGEDOWN: Skip backward twenty sections.
+      if (FlxG.keys.justPressed.PAGEDOWN) changeSection(FlxG.keys.pressed.SHIFT ? -20 : -2);
+    }
     #end
 
     if (FlxG.keys.justPressed.B) trace(inputSpitter.join('\n'));
@@ -2757,7 +2913,7 @@ class PlayState extends MusicBeatSubState
   /**
      * Handles applying health, score, and ratings.
      */
-  function applyScore(score:Int, daRating:String, healthChange:Float, isComboBreak:Bool)
+  function applyScore(score:Float, daRating:String, healthChange:Float, isComboBreak:Bool)
   {
     switch (daRating)
     {
@@ -2940,7 +3096,7 @@ class PlayState extends MusicBeatSubState
       // crackhead double thingie, sets whether was new highscore, AND saves the song!
       var data =
         {
-          score: songScore,
+          score: songScoreInt,
           tallies:
             {
               sick: Highscore.tallies.sick,
@@ -2980,7 +3136,7 @@ class PlayState extends MusicBeatSubState
     {
       isNewHighscore = false;
 
-      PlayStatePlaylist.campaignScore += songScore;
+      PlayStatePlaylist.campaignScore += songScoreInt;
 
       // Pop the next song ID from the list.
       // Returns null if the list is empty.
@@ -3127,6 +3283,12 @@ class PlayState extends MusicBeatSubState
      */
   function performCleanup():Void
   {
+    #if sys
+    // If we have a thread running, stop it.
+    FlxG.signals.preUpdate.remove(checkMainThreadActivity);
+    ThreadUtil.stopThread("playStateWindow");
+    #end
+
     // If the camera is being tweened, stop it.
     cancelAllCameraTweens();
 
@@ -3276,7 +3438,7 @@ class PlayState extends MusicBeatSubState
         prevScoreData: prevScoreData,
         scoreData:
           {
-            score: PlayStatePlaylist.isStoryMode ? PlayStatePlaylist.campaignScore : songScore,
+            score: PlayStatePlaylist.isStoryMode ? PlayStatePlaylist.campaignScore : songScoreInt,
             tallies:
               {
                 sick: talliesToUse.sick,
@@ -3470,7 +3632,6 @@ class PlayState extends MusicBeatSubState
     scrollSpeedTweens = [];
   }
 
-  #if FEATURE_DEBUG_FUNCTIONS
   /**
      * Jumps forward or backward a number of sections in the song.
      * Accounts for BPM changes, does not prevent death from skipped notes.
@@ -3499,5 +3660,4 @@ class PlayState extends MusicBeatSubState
 
     resyncVocals();
   }
-  #end
 }
