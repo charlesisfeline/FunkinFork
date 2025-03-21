@@ -47,7 +47,7 @@ class Preferences
     #if (web || flash)
     return false;
     #else
-    return Save?.instance?.options?.vsync ?? FlxG.stage.window.vsync;
+    return Save?.instance?.options?.vsync ?? FlxG.stage.window.context.attributes.vsync;
     #end
   }
 
@@ -64,7 +64,7 @@ class Preferences
     if (value && framerate > refreshRate) FlxG.updateFramerate = FlxG.drawFramerate = refreshRate;
     else
       framerate = framerate; // Re-apply FPS if disabling
-    return FlxG.stage.window.vsync = value;
+    return FlxG.stage.window.context.attributes.vsync = value;
     #end
   }
 

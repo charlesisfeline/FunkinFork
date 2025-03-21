@@ -104,7 +104,7 @@ class FreeplayDJ extends FlxAtlasSprite
         timeIdling += elapsed;
 
         // it was this.isLoopComplete()'s fault ok
-        if (timeIdling > IDLE_EGG_PERIOD && !seenIdleEasterEgg) currentState = AfkIdle;
+        if (timeIdling > IDLE_EGG_PERIOD && !seenIdleEasterEgg) currentState = IdleEasterEgg;
         else if (timeIdling > IDLE_CARTOON_PERIOD && characterId == 'bf')
         {
           // for bf only!

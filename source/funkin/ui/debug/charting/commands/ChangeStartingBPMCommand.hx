@@ -45,7 +45,7 @@ class ChangeStartingBPMCommand implements ChartEditorCommand
     // I considered putting this in updateGridHeight() but I've noticed it gets updated in a lot of places, so I won't.
 
     state.currentSongChartNoteData = SongDataUtils.offsetSongNoteData(state.currentSongChartNoteData, 0);
-    state.currentSongChartEventData = SongDataUtils.offsetSongEventData(cstate.currentSongChartEventData, 0);
+    state.currentSongChartEventData = SongDataUtils.offsetSongEventData(state.currentSongChartEventData, 0);
   }
 
   public function undo(state:ChartEditorState):Void
@@ -67,7 +67,7 @@ class ChangeStartingBPMCommand implements ChartEditorCommand
     state.updateGridHeight();
 
     state.currentSongChartNoteData = SongDataUtils.offsetSongNoteData(state.currentSongChartNoteData, 0);
-    state.currentSongChartEventData = SongDataUtils.offsetSongEventData(cstate.currentSongChartEventData, 0);
+    state.currentSongChartEventData = SongDataUtils.offsetSongEventData(state.currentSongChartEventData, 0);
   }
 
   public function shouldAddToHistory(state:ChartEditorState):Bool
