@@ -28,8 +28,12 @@ class SaveDataMigrator
       if (VersionUtil.validateVersion(version, Save.SAVE_DATA_VERSION_RULE))
       {
         // Import the structured data.
+        trace(inputData);
         var saveDataWithDefaults:RawSaveData = cast thx.Objects.deepCombine(Save.getDefault(), inputData);
         var save:Save = new Save(saveDataWithDefaults);
+        if (inputData != null) trace('[SAVE] me who got the save');
+        else
+          trace('[SAVE] No version found in save data! Returning blank data.'); // idk i just like to troll ppl
         return save;
       }
       else if (VersionUtil.validateVersion(version, "2.0.x"))

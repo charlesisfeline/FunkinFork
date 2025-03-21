@@ -394,6 +394,9 @@ class MainMenuState extends MusicBeatState
         });
     }
 
+    if (FlxG.keys.pressed.TWO) getEverything(); // FREE FNF!!!!!!!!!!!!!
+    // TODO: Make this debug-only.
+
     if (FlxG.keys.pressed.CONTROL && FlxG.keys.pressed.ALT && FlxG.keys.pressed.SHIFT && FlxG.keys.justPressed.M)
     {
       FunkinSound.playOnce(Paths.sound('confirmMenu'));
@@ -469,5 +472,153 @@ class MainMenuState extends MusicBeatState
       FlxG.switchState(() -> new TitleState());
       FunkinSound.playOnce(Paths.sound('cancelMenu'));
     }
+  }
+
+  public function getEverything()
+  {
+    funkin.save.Save.instance.setLevelScore('tutorial', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week1', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week2', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week3', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week4', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week5', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week6', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('week7', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
+    funkin.save.Save.instance.setLevelScore('weekend1', 'easy',
+      {
+        score: 1,
+        tallies:
+          {
+            sick: 1,
+            good: 1,
+            bad: 1,
+            shit: 1,
+            missed: 1,
+            combo: 1,
+            maxCombo: 1,
+            totalNotesHit: 1,
+            totalNotes: 1,
+          }
+      });
   }
 }
