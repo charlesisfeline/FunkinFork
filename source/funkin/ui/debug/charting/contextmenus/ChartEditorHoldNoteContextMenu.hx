@@ -23,7 +23,7 @@ class ChartEditorHoldNoteContextMenu extends ChartEditorBaseContextMenu
   var contextmenuUnit:DropDown;
   var contextmenuFlip:MenuItem;
   var contextmenuDelete:MenuItem;
-
+  
   public var selectedUnit:Int;
 
   public var data:SongNoteData;

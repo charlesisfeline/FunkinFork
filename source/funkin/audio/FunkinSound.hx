@@ -16,6 +16,7 @@ import funkin.Paths.PathsFunction;
 import openfl.Assets;
 import lime.app.Future;
 import lime.app.Promise;
+import openfl.media.SoundChannel;
 import openfl.media.SoundMixer;
 
 #if (openfl >= "8.0.0")
@@ -366,8 +367,25 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
 
     if (shouldLoadPartial)
     {
-      var music = FunkinSound.loadPartial(pathToUse, params.partialParams?.start ?? 0.0, params.partialParams?.end ?? 1.0, params?.startingVolume ?? 1.0,
-        params.loop ?? true, false, false, params.onComplete);
+      var partialStart:Float = params.partialParams?.start ?? 0.0;
+      var partialEnd:Float = params.partialParams?.end ?? 1.0;
+
+      // If a raw start or end time is provided, load a sound to serve as a reference to calculate the percentage to be used in partial sound loading.
+      var tempSound:openfl.media.Sound = Assets.getSound(pathToUse);
+
+      if (params.partialParams?.startRaw != null)
+      {
+        partialStart = FlxMath.bound((params.partialParams?.startRaw ?? 0) / tempSound.length, 0, tempSound.length);
+      }
+
+      if (params.partialParams?.endRaw != null)
+      {
+        // The partial sound preview end should come later than the beginning.
+        partialEnd = FlxMath.bound((params.partialParams?.endRaw ?? 15000) / tempSound.length, partialStart, tempSound.length);
+      }
+
+      var music = FunkinSound.loadPartial(pathToUse, partialStart, partialEnd, params?.startingVolume ?? 1.0, params.loop ?? true, false, false,
+        params.onComplete);
 
       if (music != null)
       {
@@ -433,19 +451,26 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
    * @param persist         Whether to keep this `FunkinSound` between states, or destroy it.
    * @param onComplete      Called when the sound finished playing.
    * @param onLoad          Called when the sound finished loading.  Called immediately for succesfully loaded embedded sounds.
+   * @param important       If `true` and the sound channel list is full, the first sound will be cleared to make room for this sound.
    * @return A `FunkinSound` object, or `null` if the sound could not be loaded.
    */
   public static function load(embeddedSound:FlxSoundAsset, volume:Float = 1.0, looped:Bool = false, autoDestroy:Bool = false, autoPlay:Bool = false,
-      persist:Bool = false, ?onComplete:Void->Void, ?onLoad:Void->Void):Null<FunkinSound>
+      persist:Bool = false, ?onComplete:Void->Void, ?onLoad:Void->Void, important:Bool = false):Null<FunkinSound>
   {
     @:privateAccess
-    if (SoundMixer.__soundChannels.length >= SoundMixer.MAX_ACTIVE_CHANNELS)
+    if (SoundMixer.__soundChannels.length >= SoundMixer.MAX_ACTIVE_CHANNELS && !important)
     {
       FlxG.log.error('FunkinSound could not play sound, channels exhausted! Found ${SoundMixer.__soundChannels.length} active sound channels.');
       return null;
     }
 
     var sound:FunkinSound = pool.recycle(construct);
+
+    if (important)
+    {
+      importantSoundQueue.push(sound);
+      FunkinSound.clearSoundChannels();
+    }
 
     // Load the sound.
     // Sets `exists = true` as a side effect.
@@ -525,6 +550,7 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
   @:nullSafety(Off)
   public override function destroy():Void
   {
+    if (importantSoundQueue.contains(this)) importantSoundQueue.remove(this);
     // trace('[FunkinSound] Destroying sound "${this._label}"');
     super.destroy();
     if (fadeTween != null)
@@ -534,6 +560,45 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
     }
     FlxTween.cancelTweensOf(this);
     this._label = 'unknown';
+  }
+
+  override function startSound(startTime:Float)
+  {
+    FunkinSound.clearSoundChannels();
+    super.startSound(startTime);
+  }
+
+  override function cleanup(destroySound:Bool, resetPosition:Bool = true)
+  {
+    if (importantSoundQueue.contains(this)) importantSoundQueue.remove(this);
+    super.cleanup(destroySound, resetPosition);
+  }
+
+  static var importantSoundQueue:Array<FunkinSound> = [];
+
+  @:access(openfl.media.SoundMixer)
+  @:access(flixel.sound.FlxSound)
+  public static function clearSoundChannels()
+  {
+    // If there are more important sounds than sound channels, we treat them as if they aren't important and clear them.
+    var keepImportants:Bool = (importantSoundQueue.length < SoundMixer.MAX_ACTIVE_CHANNELS);
+    var importantChannels:Array<SoundChannel> = [for (snd in importantSoundQueue) snd?._channel].filterNull();
+
+    while (SoundMixer.__soundChannels.length >= SoundMixer.MAX_ACTIVE_CHANNELS)
+    {
+      var channel:Null<SoundChannel> = SoundMixer.__soundChannels.pop();
+      if (channel == null) continue;
+
+      // If the channel is important, put it back to the array.
+      if (keepImportants && importantChannels.contains(channel))
+      {
+        SoundMixer.__soundChannels.push(channel);
+        continue;
+      }
+
+      // Otherwise, stop it.
+      channel?.stop();
+    }
   }
 
   /**
@@ -644,4 +709,6 @@ typedef PartialSoundParams =
   var loadPartial:Bool;
   var start:Float;
   var end:Float;
+  var ?startRaw:Int;
+  var ?endRaw:Int;
 }

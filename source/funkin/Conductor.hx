@@ -152,13 +152,13 @@ class Conductor
   }
 
   /**
-   * Duration of a step (sixtennth note) in milliseconds. Calculated based on bpm.
+   * Duration of a step (sixteenth note) in milliseconds. Calculated based on bpm.
    */
   public var stepLengthMs(get, never):Float;
 
   function get_stepLengthMs():Float
   {
-    return beatLengthMs / timeSignatureNumerator;
+    return beatLengthMs / Constants.STEPS_PER_BEAT;
   }
 
   /**
@@ -227,7 +227,7 @@ class Conductor
 
   function get_instrumentalOffsetSteps():Float
   {
-    var startingStepLengthMs:Float = ((Constants.SECS_PER_MIN / startingBPM) * Constants.MS_PER_SEC) / timeSignatureNumerator;
+    var startingStepLengthMs:Float = ((Constants.SECS_PER_MIN / startingBPM) * Constants.MS_PER_SEC) / Constants.STEPS_PER_BEAT;
 
     return instrumentalOffset / startingStepLengthMs;
   }
@@ -422,7 +422,7 @@ class Conductor
     // If the song is playing, limit the song position to the length of the song or beginning of the song.
     if (FlxG.sound.music != null && FlxG.sound.music.playing)
     {
-      this.songPosition = Math.min(currentLength, Math.max(0, songPos));
+      this.songPosition = FlxMath.bound(Math.min(this.combinedOffset, 0), songPos, currentLength);
     }
     else
     {
@@ -593,7 +593,7 @@ class Conductor
         }
       }
 
-      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / timeSignatureNumerator;
+      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / Constants.STEPS_PER_BEAT;
       var resultFractionalStep:Float = (ms - lastTimeChange.timeStamp) / lastStepLengthMs;
       resultStep += resultFractionalStep;
 
@@ -632,7 +632,7 @@ class Conductor
         }
       }
 
-      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / timeSignatureNumerator;
+      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / Constants.STEPS_PER_BEAT;
       resultMs += (stepTime - lastTimeChange.beatTime * Constants.STEPS_PER_BEAT) * lastStepLengthMs;
 
       return resultMs;
@@ -670,7 +670,7 @@ class Conductor
         }
       }
 
-      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / timeSignatureNumerator;
+      var lastStepLengthMs:Float = ((Constants.SECS_PER_MIN / lastTimeChange.bpm) * Constants.MS_PER_SEC) / Constants.STEPS_PER_BEAT;
       resultMs += (beatTime - lastTimeChange.beatTime) * lastStepLengthMs * Constants.STEPS_PER_BEAT;
 
       return resultMs;

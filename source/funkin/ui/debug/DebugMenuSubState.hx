@@ -61,8 +61,13 @@ class DebugMenuSubState extends MusicBeatSubState
     #if FEATURE_STAGE_EDITOR
     createItem("STAGE EDITOR", openStageEditor);
     #end
+
+    #if FEATURE_SCREENSHOTS
+    createItem("GALLERY", () -> FlxG.switchState(() -> new funkin.ui.gallery.ScreenshotGalleryState()));
+    #end
+
     // createItem("Input Offset Testing", openInputOffsetTesting);
-    // createItem("CHARACTER SELECT", openCharSelect, true);
+    createItem("CHARACTER SELECT", openCharSelect, true);
     // createItem("TEST STICKERS", testStickers);
     #if sys
     createItem("OPEN CRASH LOG FOLDER", openLogFolder);
@@ -115,7 +120,7 @@ class DebugMenuSubState extends MusicBeatSubState
 
   function openAnimationEditor()
   {
-    FlxG.switchState(() -> new funkin.ui.debug.anim.DebugBoundingState());
+    FlxG.switchState(() -> new funkin.ui.debug.anim.AnimationEditorState());
     trace('Animation Editor');
   }
 

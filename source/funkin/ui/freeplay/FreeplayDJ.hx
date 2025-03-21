@@ -101,18 +101,15 @@ class FreeplayDJ extends FlxAtlasSprite
           playFlashAnimation(animPrefix, true, false, true);
         }
 
-        if (getCurrentAnimation() == animPrefix && this.isLoopComplete())
-        {
-          if (timeIdling >= IDLE_EGG_PERIOD && !seenIdleEasterEgg)
-          {
-            currentState = IdleEasterEgg;
-          }
-          else if (timeIdling >= IDLE_CARTOON_PERIOD)
-          {
-            currentState = Cartoon;
-          }
-        }
         timeIdling += elapsed;
+
+        // it was this.isLoopComplete()'s fault ok
+        if (timeIdling > IDLE_EGG_PERIOD && !seenIdleEasterEgg) currentState = IdleEasterEgg;
+        else if (timeIdling > IDLE_CARTOON_PERIOD && characterId == 'bf')
+        {
+          // for bf only!
+          currentState = Cartoon;
+        }
       case NewUnlock:
         var animPrefix = playableCharData.getAnimationPrefix('newUnlock');
         if (!hasAnimation(animPrefix))
@@ -123,6 +120,8 @@ class FreeplayDJ extends FlxAtlasSprite
         {
           playFlashAnimation(animPrefix, true, false, true);
         }
+        timeIdling = 0;
+
       case Confirm:
         var animPrefix = playableCharData.getAnimationPrefix('confirm');
         if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
@@ -130,6 +129,8 @@ class FreeplayDJ extends FlxAtlasSprite
       case FistPumpIntro:
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
+
+        timeIdling = 0;
 
         if (getCurrentAnimation() == animPrefixA)
         {
@@ -157,6 +158,8 @@ class FreeplayDJ extends FlxAtlasSprite
         var animPrefixA = playableCharData.getAnimationPrefix('fistPump');
         var animPrefixB = playableCharData.getAnimationPrefix('loss');
 
+        timeIdling = 0;
+
         if (getCurrentAnimation() == animPrefixA)
         {
           var endFrame = playableCharData.getFistPumpLoopEndFrame();
@@ -181,12 +184,9 @@ class FreeplayDJ extends FlxAtlasSprite
 
       case IdleEasterEgg:
         var animPrefix = playableCharData.getAnimationPrefix('idleEasterEgg');
-        if (getCurrentAnimation() != animPrefix)
-        {
-          onIdleEasterEgg.dispatch();
-          playFlashAnimation(animPrefix, false);
-          seenIdleEasterEgg = true;
-        }
+        if (getCurrentAnimation() != animPrefix) playFlashAnimation(animPrefix, false);
+        seenIdleEasterEgg = true;
+        onIdleEasterEgg.dispatch();
         timeIdling = 0;
       case Cartoon:
         var animPrefix = playableCharData.getAnimationPrefix('cartoon');
@@ -236,71 +236,39 @@ class FreeplayDJ extends FlxAtlasSprite
 
   function onFinishAnim(name:String):Void
   {
-    // var name = anim.curSymbol.name;
-
-    if (name == playableCharData.getAnimationPrefix('intro'))
+    switch (currentState)
     {
-      if (PlayerRegistry.instance.hasNewCharacter())
-      {
-        currentState = NewUnlock;
-      }
-      else
-      {
+      case Intro:
+        if (PlayerRegistry.instance.hasNewCharacter())
+        {
+          currentState = NewUnlock;
+        }
+        else
+        {
+          currentState = Idle;
+        }
+        onIntroDone.dispatch();
+      case FistPump:
         currentState = Idle;
-      }
-      onIntroDone.dispatch();
-    }
-    else if (name == playableCharData.getAnimationPrefix('idle'))
-    {
-      // trace('Finished idle');
-    }
-    else if (name == playableCharData.getAnimationPrefix('confirm'))
-    {
-      // trace('Finished confirm');
-    }
-    else if (name == playableCharData.getAnimationPrefix('fistPump'))
-    {
-      // trace('Finished fist pump');
-      currentState = Idle;
-    }
-    else if (name == playableCharData.getAnimationPrefix('idleEasterEgg'))
-    {
-      // trace('Finished spook');
-      currentState = Idle;
-    }
-    else if (name == playableCharData.getAnimationPrefix('loss'))
-    {
-      // trace('Finished loss reaction');
-      currentState = Idle;
-    }
-    else if (name == playableCharData.getAnimationPrefix('cartoon'))
-    {
-      // trace('Finished cartoon');
+      case IdleEasterEgg:
+        currentState = Idle;
+      case Cartoon:
+        var frame:Int = FlxG.random.bool(33) ? playableCharData.getCartoonLoopBlinkFrame() : playableCharData.getCartoonLoopFrame();
+        var cartoonAnim:String = playableCharData.getAnimationPrefix('cartoon');
 
-      var frame:Int = FlxG.random.bool(33) ? playableCharData.getCartoonLoopBlinkFrame() : playableCharData.getCartoonLoopFrame();
-
-      // Character switches channels when the video ends, or at a 10% chance each time his idle loops.
-      if (FlxG.random.bool(5))
-      {
-        frame = playableCharData.getCartoonChannelChangeFrame();
-        // boyfriend switches channel code?
-        // runTvLogic();
-      }
-      trace('Replay idle: ${frame}');
-      playFlashAnimation(playableCharData.getAnimationPrefix('cartoon'), true, false, false, frame);
-      // trace('Finished confirm');
-    }
-    else if (name == playableCharData.getAnimationPrefix('newUnlock'))
-    {
-      // Animation should loop.
-    }
-    else if (name == playableCharData.getAnimationPrefix('charSelect'))
-    {
-      onCharSelectComplete();
-    }
-    else
-    {
-      trace('Finished ${name}');
+        // Character switches channels when the video ends, or at a 10% chance each time his idle loops.
+        if (FlxG.random.bool(5))
+        {
+          frame = playableCharData.getCartoonChannelChangeFrame();
+          // boyfriend switches channel code?
+          // runTvLogic();
+        }
+        trace('Replay idle: ${frame}');
+        playFlashAnimation(cartoonAnim, true, false, false, frame);
+      case CharSelect:
+        onCharSelectComplete();
+      default:
+        // Nothing!
     }
   }
 

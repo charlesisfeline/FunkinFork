@@ -22,6 +22,7 @@ import funkin.ui.freeplay.charselect.PlayableCharacter;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxEase;
 import funkin.graphics.FunkinCamera;
+import funkin.input.Controls;
 import funkin.ui.freeplay.FreeplayState;
 import flixel.tweens.FlxTween;
 import flixel.addons.display.FlxBackdrop;
@@ -80,6 +81,19 @@ class ResultState extends MusicBeatSubState
   final cameraBG:FunkinCamera;
   final cameraScroll:FunkinCamera;
   final cameraEverything:FunkinCamera;
+
+  /**
+   * Whether the game is currently in Practice Mode.
+   * If true, player will not lose gain or lose score from notes.
+   */
+  var isPracticeMode(get, never):Bool;
+
+  function get_isPracticeMode():Bool
+  {
+    return PlayState.instance.isPracticeMode;
+  }
+
+
 
   public function new(params:ResultsStateParams)
   {
@@ -365,6 +379,11 @@ class ResultState extends MusicBeatSubState
     var maxCombo:TallyCounter = new TallyCounter(375, hStuf * 4, params.scoreData.tallies.maxCombo);
     ratingGrp.add(maxCombo);
 
+    if (params.scoreData.tallies.totalNotesHit >= 1000) {
+      totalHit.x -= 30;
+      maxCombo.x -= 30;
+    }
+  
     hStuf += 2;
     var extraYOffset:Float = 7;
 
@@ -529,16 +548,6 @@ class ResultState extends MusicBeatSubState
         // scorePopin.animation.play("score");
 
         // scorePopin.visible = true;
-
-        if (params.isNewHighscore ?? false)
-        {
-          highscoreNew.visible = true;
-          highscoreNew.animation.play("new");
-        }
-        else
-        {
-          highscoreNew.visible = false;
-        }
       };
     }
 
@@ -727,7 +736,18 @@ class ResultState extends MusicBeatSubState
       speedOfTween.x -= 0.1;
     }
 
-    if (controls.PAUSE)
+    if (controls.RESET)
+    {
+      if (PlayState.instance == null) return; // Do nothing - there's no playstate to return to
+      FlxTimer.globalManager.clear();
+      FlxTween.globalManager.clear();
+      if (introMusicAudio != null) introMusicAudio.stop();
+      // if (resultsMusic != null) resultsMusic.stop();
+      this.close();
+      return;
+    }
+
+    if (controls.PAUSE || controls.ACCEPT)
     {
       if (introMusicAudio != null)
       {
@@ -816,7 +836,7 @@ class ResultState extends MusicBeatSubState
                     newRank: rank,
                     songId: params.songId,
                     difficultyId: params.difficultyId,
-                    playRankAnim: true
+                    playRankAnim: (isPracticeMode == true) ? false : true
                   }
               }
             });

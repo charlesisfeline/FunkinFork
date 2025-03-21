@@ -8,6 +8,7 @@ import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxSort;
+import funkin.graphics.FunkinSprite;
 import funkin.play.notes.NoteHoldCover;
 import funkin.play.notes.NoteSplash;
 import funkin.play.notes.NoteSprite;
@@ -68,6 +69,13 @@ class Strumline extends FlxSpriteGroup
   public var isPlayer:Bool;
 
   /**
+   * Whether this strumline should reward scores on hold.
+   * Should usually be the same as isPlayer, but modders may want to modify sustain/input behavior.
+   * Assumes strumline is in PlayState, nothing happens otherwise.
+   */
+  public var rewardSustains:Bool;
+
+  /**
    * Usually you want to keep this as is, but if you are using a Strumline and
    * playing a sound that has it's own conductor, set this (LatencyState for example)
    */
@@ -110,6 +118,8 @@ class Strumline extends FlxSpriteGroup
 
   public var onNoteIncoming:FlxTypedSignal<NoteSprite->Void>;
 
+  var background:FunkinSprite;
+
   var strumlineNotes:FlxTypedSpriteGroup<StrumlineNote>;
   var noteSplashes:FlxTypedSpriteGroup<NoteSplash>;
   var noteHoldCovers:FlxTypedSpriteGroup<NoteHoldCover>;
@@ -133,11 +143,14 @@ class Strumline extends FlxSpriteGroup
 
   var heldKeys:Array<Bool> = [];
 
+  static final BACKGROUND_PAD:Int = 16;
+
   public function new(noteStyle:NoteStyle, isPlayer:Bool)
   {
     super();
 
     this.isPlayer = isPlayer;
+    this.rewardSustains = isPlayer;
     this.noteStyle = noteStyle;
 
     this.strumlineNotes = new FlxTypedSpriteGroup<StrumlineNote>();
@@ -169,6 +182,13 @@ class Strumline extends FlxSpriteGroup
     this.noteSplashes.zIndex = 50;
     this.add(this.noteSplashes);
 
+    this.background = new FunkinSprite(0, 0).makeSolidColor(Std.int(this.width + BACKGROUND_PAD * 2), FlxG.height, 0xFF000000);
+    // Convert the percent to a number between 0 and 1.
+    this.background.alpha = Preferences.strumlineBackgroundOpacity / 100.0;
+    this.background.scrollFactor.set(0, 0);
+    this.background.x = -BACKGROUND_PAD;
+    this.add(this.background);
+
     this.refresh();
 
     this.onNoteIncoming = new FlxTypedSignal<NoteSprite->Void>();
@@ -191,6 +211,16 @@ class Strumline extends FlxSpriteGroup
 
     // This MUST be true for children to update!
     this.active = true;
+  }
+
+  override function set_y(value:Float):Float
+  {
+    super.set_y(value);
+
+    // Keep the background on the screen.
+    if (this.background != null) this.background.y = 0;
+
+    return value;
   }
 
   public function refresh():Void
@@ -496,7 +526,11 @@ class Strumline extends FlxSpriteGroup
         holdConfirm(holdNote.noteDirection);
         holdNote.visible = true;
 
-        holdNote.sustainLength = (holdNote.strumTime + holdNote.fullSustainLength) - conductorInUse.songPosition;
+        var lastLength = holdNote.sustainLength;
+        holdNote.sustainLength = (holdNote.strumTime + holdNote.fullSustainLength) - conductorInUse.songPosition + conductorInUse.inputOffset;
+
+        // Don't reward hitting too early, don't penalize hitting too late
+        if (rewardSustains) PlayState?.instance.sustainHit(holdNote, lastLength);
 
         if (holdNote.sustainLength <= 10)
         {
@@ -683,7 +717,11 @@ class Strumline extends FlxSpriteGroup
       note.holdNoteSprite.hitNote = true;
       note.holdNoteSprite.missedNote = false;
 
-      note.holdNoteSprite.sustainLength = (note.holdNoteSprite.strumTime + note.holdNoteSprite.fullSustainLength) - conductorInUse.songPosition;
+      var lastLength = note.holdNoteSprite.sustainLength;
+      note.holdNoteSprite.sustainLength = (note.holdNoteSprite.strumTime + note.holdNoteSprite.fullSustainLength)
+        - (conductorInUse.songPosition - conductorInUse.inputOffset);
+
+      if (rewardSustains) PlayState?.instance.sustainHit(note.holdNoteSprite, lastLength);
     }
 
     #if FEATURE_GHOST_TAPPING
@@ -742,7 +780,7 @@ class Strumline extends FlxSpriteGroup
 
   public function playNoteSplash(direction:NoteDirection):Void
   {
-    if (!showNotesplash) return;
+    if (!Preferences.noteSplashes || !showNotesplash) return;
     if (!noteStyle.isNoteSplashEnabled()) return;
 
     var splash:NoteSplash = this.constructNoteSplash();
@@ -762,7 +800,7 @@ class Strumline extends FlxSpriteGroup
 
   public function playNoteHoldCover(holdNote:SustainTrail):Void
   {
-    if (!showNotesplash) return;
+    if (!Preferences.noteSplashes || !showNotesplash) return;
     if (!noteStyle.isHoldNoteCoverEnabled()) return;
 
     var cover:NoteHoldCover = this.constructNoteHoldCover();
@@ -1009,5 +1047,43 @@ class Strumline extends FlxSpriteGroup
   function compareHoldNoteSprites(order:Int, a:SustainTrail, b:SustainTrail):Int
   {
     return FlxSort.byValues(order, a?.strumTime, b?.strumTime);
+  }
+
+  override function findMinYHelper()
+  {
+    var value = Math.POSITIVE_INFINITY;
+    for (member in group.members)
+    {
+      if (member == null) continue;
+      // SKIP THE BACKGROUND
+      if (member == this.background) continue;
+
+      var minY:Float;
+      if (member.flixelType == SPRITEGROUP) minY = (cast member : FlxSpriteGroup).findMinY();
+      else
+        minY = member.y;
+
+      if (minY < value) value = minY;
+    }
+    return value;
+  }
+
+  override function findMaxYHelper()
+  {
+    var value = Math.NEGATIVE_INFINITY;
+    for (member in group.members)
+    {
+      if (member == null) continue;
+      // SKIP THE BACKGROUND
+      if (member == this.background) continue;
+
+      var maxY:Float;
+      if (member.flixelType == SPRITEGROUP) maxY = (cast member : FlxSpriteGroup).findMaxY();
+      else
+        maxY = member.y + member.height;
+
+      if (maxY > value) value = maxY;
+    }
+    return value;
   }
 }

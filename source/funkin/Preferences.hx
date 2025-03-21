@@ -8,6 +8,63 @@ import funkin.save.Save;
 class Preferences
 {
   /**
+   * If enabled, plays a highlight animation when notes are hit.
+   * @default `true`
+   */
+  public static var noteHighlights(get, set):Bool;
+
+  static function get_noteHighlights():Bool
+  {
+    return Save?.instance?.options?.noteHighlights;
+  }
+
+  static function set_noteHighlights(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.noteHighlights = value;
+    save.flush();
+    return value;
+  }
+
+  /**
+   * If enabled, plays a splash particle effect when sick notes are hit.
+   * @default `true`
+   */
+  public static var noteSplashes(get, set):Bool;
+
+  static function get_noteSplashes():Bool
+  {
+    return Save?.instance?.options?.noteSplashes;
+  }
+
+  static function set_noteSplashes(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.noteSplashes = value;
+    save.flush();
+    return value;
+  }
+
+  /**
+   * If enabled, the miss sound will play when the player misses a note.
+   * @default `true`
+   */
+  public static var playMissSound(get, set):Bool;
+
+  static function get_playMissSound():Bool
+  {
+    return Save?.instance?.options?.playMissSound;
+  }
+
+  static function set_playMissSound(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.playMissSound = value;
+    save.flush();
+    return value;
+  }
+
+  /**
    * FPS
    * @default `60`
    */
@@ -33,6 +90,38 @@ class Preferences
     FlxG.updateFramerate = value;
     FlxG.drawFramerate = value;
     return value;
+    #end
+  }
+
+  /**
+   * V-Sync
+   * @default false
+   */
+  public static var vsync(get, set):Bool;
+
+  static function get_vsync():Bool
+  {
+    #if (web || flash)
+    return false;
+    #else
+    return Save?.instance?.options?.vsync ?? FlxG.stage.window.context.attributes.vsync;
+    #end
+  }
+
+  static function set_vsync(value:Bool):Bool
+  {
+    #if (web || flash)
+    return false;
+    #else
+    var save:Save = Save.instance;
+    save.options.vsync = value;
+    save.flush();
+    // TODO: Do we really don't want to overwrite the saved framerate?
+    var refreshRate:Int = FlxG.stage.window.displayMode.refreshRate;
+    if (value && framerate > refreshRate) FlxG.updateFramerate = FlxG.drawFramerate = refreshRate;
+    else
+      framerate = framerate; // Re-apply FPS if disabling
+    return FlxG.stage.window.context.attributes.vsync = value;
     #end
   }
 
@@ -217,6 +306,26 @@ class Preferences
   // This also gets set in the init function in Main.hx, since we need to definitely override it
   public static var lockedFramerateFunction = untyped js.Syntax.code("window.requestAnimationFrame");
   #end
+
+  /**
+   * If >0, the game will display a semi-opaque background under the notes.
+   * `0` for no background, `100` for solid black if you're freaky like that
+   * @default `0`
+   */
+  public static var strumlineBackgroundOpacity(get, set):Int;
+
+  static function get_strumlineBackgroundOpacity():Int
+  {
+    return (Save?.instance?.options?.strumlineBackgroundOpacity ?? 0);
+  }
+
+  static function set_strumlineBackgroundOpacity(value:Int):Int
+  {
+    var save:Save = Save.instance;
+    save.options.strumlineBackgroundOpacity = value;
+    save.flush();
+    return value;
+  }
 
   /**
    * Loads the user's preferences from the save data and apply them.

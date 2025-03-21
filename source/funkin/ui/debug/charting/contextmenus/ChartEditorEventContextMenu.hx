@@ -21,8 +21,6 @@ class ChartEditorEventContextMenu extends ChartEditorBaseContextMenu
   var contextmenuEdit:MenuItem;
   var contextmenuDelete:MenuItem;
 
-  public var selectedUnit:Int;
-
   public var data:SongEventData;
 
   public function new(chartEditorState2:ChartEditorState, xPos2:Float = 0, yPos2:Float = 0, data:SongEventData, selectedUnit:Int = 0)

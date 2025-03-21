@@ -11,6 +11,10 @@ import funkin.ui.debug.charting.commands.CutItemsCommand;
 import funkin.ui.debug.charting.commands.RemoveEventsCommand;
 import funkin.ui.debug.charting.commands.RemoveItemsCommand;
 import funkin.ui.debug.charting.commands.RemoveNotesCommand;
+import funkin.ui.debug.charting.commands.FlipNotesCommand;
+import funkin.ui.debug.charting.commands.SelectAllItemsCommand;
+import funkin.ui.debug.charting.commands.InvertSelectedItemsCommand;
+import funkin.ui.debug.charting.commands.DeselectAllItemsCommand;
 
 @:access(funkin.ui.debug.charting.ChartEditorState)
 @:build(haxe.ui.ComponentBuilder.build("assets/exclude/data/ui/chart-editor/context-menus/selection.xml"))
@@ -42,7 +46,7 @@ class ChartEditorSelectionContextMenu extends ChartEditorBaseContextMenu
     initialize();
   }
 
-  function initialize():Void
+  public function initialize():Void
   {
     // NOTE: Remember to use commands here to ensure undo/redo works properly
     contextmenuUnit.onChange = function(_) {
@@ -116,8 +120,8 @@ class ChartEditorSelectionContextMenu extends ChartEditorBaseContextMenu
     contextmenuCopy.onClick = (_) -> {
       chartEditorState.copySelection();
     }
-
-    contextmenuFlip.onClick = (_) -> {
+      
+    contextmenuDelete.onClick = (_) -> {
       if (chartEditorState.currentNoteSelection.length > 0 && chartEditorState.currentEventSelection.length > 0)
       {
         chartEditorState.performCommand(new RemoveItemsCommand(chartEditorState.currentNoteSelection, chartEditorState.currentEventSelection));
@@ -134,6 +138,20 @@ class ChartEditorSelectionContextMenu extends ChartEditorBaseContextMenu
       {
         // Do nothing???
       }
+    };
+
+    contextmenuFlip.onClick = (_) -> {
+      chartEditorState.performCommand(new FlipNotesCommand(chartEditorState.currentNoteSelection));
+    }
+
+    contextmenuSelectAll.onClick = (_) -> {
+      chartEditorState.performCommand(new SelectAllItemsCommand(true, false));
+    }
+    contextmenuSelectInverse.onClick = (_) -> {
+      chartEditorState.performCommand(new InvertSelectedItemsCommand());
+    }
+    contextmenuSelectNone.onClick = (_) -> {
+      chartEditorState.performCommand(new DeselectAllItemsCommand());
     }
   }
 }

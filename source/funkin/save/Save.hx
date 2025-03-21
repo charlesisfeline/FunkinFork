@@ -20,8 +20,8 @@ class Save
   public static final SAVE_DATA_VERSION_RULE:thx.semver.VersionRule = ">=2.1.0 <2.2.0";
 
   // We load this version's saves from a new save path, to maintain SOME level of backwards compatibility.
-  static final SAVE_PATH:String = 'FunkinCrew';
-  static final SAVE_NAME:String = 'Funkin';
+  static final SAVE_PATH:String = 'charlesbutfeline';
+  static final SAVE_NAME:String = 'FunkinFork';
 
   static final SAVE_PATH_LEGACY:String = 'ninjamuffin99';
   static final SAVE_NAME_LEGACY:String = 'funkin';
@@ -90,14 +90,19 @@ class Save
       options:
         {
           // Reasonable defaults.
+          noteHighlights: true,
+          noteSplashes: true,
           framerate: 60,
+          vsync: false,
           naughtyness: true,
           downscroll: false,
+          playMissSound: true,
           flashingLights: true,
           zoomCamera: true,
-          debugDisplay: false,
+          debugDisplay: true,
           autoPause: true,
           autoFullscreen: false,
+          strumlineBackgroundOpacity: 0,
           inputOffset: 0,
           audioVisualOffset: 0,
           unlockedFramerate: false,
@@ -144,6 +149,10 @@ class Save
           metronomeVolume: 1.0,
           hitsoundVolumePlayer: 1.0,
           hitsoundVolumeOpponent: 1.0,
+          instVolume: 1.0,
+          playerVoiceVolume: 1.0,
+          opponentVoiceVolume: 1.0,
+          playbackSpeed: 1.0,
           themeMusic: true
         },
 
@@ -376,6 +385,57 @@ class Save
     data.optionsChartEditor.hitsoundVolumeOpponent = value;
     flush();
     return data.optionsChartEditor.hitsoundVolumeOpponent;
+  }
+
+  public var chartEditorInstVolume(get, set):Float;
+
+  function get_chartEditorInstVolume():Float
+  {
+    if (data.optionsChartEditor.instVolume == null) data.optionsChartEditor.instVolume = 1.0;
+
+    return data.optionsChartEditor.instVolume;
+  }
+
+  function set_chartEditorInstVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.instVolume = value;
+    flush();
+    return data.optionsChartEditor.instVolume;
+  }
+
+  public var chartEditorPlayerVoiceVolume(get, set):Float;
+
+  function get_chartEditorPlayerVoiceVolume():Float
+  {
+    if (data.optionsChartEditor.playerVoiceVolume == null) data.optionsChartEditor.playerVoiceVolume = 1.0;
+
+    return data.optionsChartEditor.playerVoiceVolume;
+  }
+
+  function set_chartEditorPlayerVoiceVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.playerVoiceVolume = value;
+    flush();
+    return data.optionsChartEditor.playerVoiceVolume;
+  }
+
+  public var chartEditorOpponentVoiceVolume(get, set):Float;
+
+  function get_chartEditorOpponentVoiceVolume():Float
+  {
+    if (data.optionsChartEditor.opponentVoiceVolume == null) data.optionsChartEditor.opponentVoiceVolume = 1.0;
+
+    return data.optionsChartEditor.opponentVoiceVolume;
+  }
+
+  function set_chartEditorOpponentVoiceVolume(value:Float):Float
+  {
+    // Set and apply.
+    data.optionsChartEditor.opponentVoiceVolume = value;
+    flush();
+    return data.optionsChartEditor.opponentVoiceVolume;
   }
 
   public var chartEditorThemeMusic(get, set):Bool;
@@ -1299,10 +1359,28 @@ typedef SaveScoreTallyData =
 typedef SaveDataOptions =
 {
   /**
+   * If enabled, plays a highlight animation when notes are hit.
+   * @default `true`
+   */
+  var noteHighlights:Bool;
+
+  /**
+   * If enabled, plays a splash particle effect when sick notes are hit.
+   * @default `true`
+   */
+  var noteSplashes:Bool;
+
+  /**
    * FPS
    * @default `60`
    */
   var framerate:Int;
+
+  /**
+   * V-Sync
+   * @default `false`
+   */
+  var vsync:Bool;
 
   /**
    * Whether some particularly foul language is displayed.
@@ -1330,15 +1408,28 @@ typedef SaveDataOptions =
 
   /**
    * If enabled, an FPS and memory counter will be displayed even if this is not a debug build.
-   * @default `false`
+   * @default `true`
    */
   var debugDisplay:Bool;
+
+  /**
+   * If enabled, the miss sound will play when the player misses a note.
+   * @default `true`
+   */
+  var playMissSound:Bool;
 
   /**
    * If enabled, the game will automatically pause when tabbing out.
    * @default `true`
    */
   var autoPause:Bool;
+
+  /**
+   * If >0, the game will display a semi-opaque background under the notes.
+   * `0` for no background, `100` for solid black if you're freaky like that
+   * @default `0`
+   */
+  var strumlineBackgroundOpacity:Int;
 
   /**
    * If enabled, the game will automatically launch in fullscreen on startup.
@@ -1564,10 +1655,16 @@ typedef SaveDataChartEditorOptions =
   var ?instVolume:Float;
 
   /**
-   * Voices volume in the Chart Editor.
+   * Player voice volume in the Chart Editor.
    * @default `1.0`
    */
-  var ?voicesVolume:Float;
+  var ?playerVoiceVolume:Float;
+
+  /**
+   * Opponent voice volume in the Chart Editor.
+   * @default `1.0`
+   */
+  var ?opponentVoiceVolume:Float;
 
   /**
    * Playback speed in the Chart Editor.

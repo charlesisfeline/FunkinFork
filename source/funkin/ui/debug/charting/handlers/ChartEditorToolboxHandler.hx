@@ -14,7 +14,6 @@ import funkin.play.character.BaseCharacter.CharacterType;
 import funkin.play.character.CharacterData;
 import funkin.play.character.CharacterData.CharacterDataParser;
 import funkin.play.event.SongEvent;
-import funkin.play.song.SongSerializer;
 import funkin.data.stage.StageData;
 import haxe.ui.RuntimeComponentBuilder;
 import funkin.ui.debug.charting.util.ChartEditorDropdowns;
@@ -76,7 +75,7 @@ class ChartEditorToolboxHandler
     {
       toolbox.showDialog(false);
 
-      state.playSound(Paths.sound('chartingSounds/openWindow'));
+      state.playSound(Paths.sound('chartingSounds/openWindow'), 1.0, FlxG.random.float(0.95, 1.05));
 
       switch (id)
       {
@@ -120,7 +119,7 @@ class ChartEditorToolboxHandler
     {
       toolbox.hideDialog(DialogButton.CANCEL);
 
-      state.playSound(Paths.sound('chartingSounds/exitWindow'));
+      state.playSound(Paths.sound('chartingSounds/exitWindow'), 1.0, FlxG.random.float(0.95, 1.05));
 
       switch (id)
       {
@@ -145,7 +144,10 @@ class ChartEditorToolboxHandler
   {
     var toolbox:Null<ChartEditorBaseToolbox> = cast state.activeToolboxes.get(id);
 
-    if (toolbox == null) return;
+    if (toolbox == null)
+    {
+      toolbox = cast initToolbox(state, id);
+    }
 
     if (toolbox != null)
     {
