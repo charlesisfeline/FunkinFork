@@ -90,13 +90,15 @@ class Save
       options:
         {
           // Reasonable defaults.
+          noteHighlights: true,
+          noteSplashes: true,
           framerate: 60,
           vsync: false,
           naughtyness: true,
           downscroll: false,
           flashingLights: true,
           zoomCamera: true,
-          debugDisplay: false,
+          debugDisplay: true,
           autoPause: true,
           autoFullscreen: false,
           strumlineBackgroundOpacity: 0,
@@ -1356,6 +1358,18 @@ typedef SaveScoreTallyData =
 typedef SaveDataOptions =
 {
   /**
+   * If enabled, plays a highlight animation when notes are hit.
+   * @default `true`
+   */
+  var noteHighlights:Bool;
+
+  /**
+   * If enabled, plays a splash particle effect when sick notes are hit.
+   * @default `true`
+   */
+  var noteSplashes:Bool;
+
+  /**
    * FPS
    * @default `60`
    */
@@ -1393,9 +1407,15 @@ typedef SaveDataOptions =
 
   /**
    * If enabled, an FPS and memory counter will be displayed even if this is not a debug build.
-   * @default `false`
+   * @default `true`
    */
   var debugDisplay:Bool;
+
+  /**
+   * If enabled, the miss sound will play when the player misses a note.
+   * @default `true`
+   */
+  var playMissSound:Bool;
 
   /**
    * If enabled, the game will automatically pause when tabbing out.

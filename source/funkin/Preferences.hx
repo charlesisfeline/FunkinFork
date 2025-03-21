@@ -8,6 +8,63 @@ import funkin.save.Save;
 class Preferences
 {
   /**
+   * If enabled, plays a highlight animation when notes are hit.
+   * @default `true`
+   */
+  public static var noteHighlights(get, set):Bool;
+
+  static function get_noteHighlights():Bool
+  {
+    return Save?.instance?.options?.noteHighlights;
+  }
+
+  static function set_noteHighlights(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.noteHighlights = value;
+    save.flush();
+    return value;
+  }
+
+  /**
+   * If enabled, plays a splash particle effect when sick notes are hit.
+   * @default `true`
+   */
+  public static var noteSplashes(get, set):Bool;
+
+  static function get_noteSplashes():Bool
+  {
+    return Save?.instance?.options?.noteSplashes;
+  }
+
+  static function set_noteSplashes(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.noteSplashes = value;
+    save.flush();
+    return value;
+  }
+
+  /**
+   * If enabled, the miss sound will play when the player misses a note.
+   * @default `true`
+   */
+  public static var playMissSound(get, set):Bool;
+
+  static function get_playMissSound():Bool
+  {
+    return Save?.instance?.options?.playMissSound;
+  }
+
+  static function set_playMissSound(value:Bool):Bool
+  {
+    var save:Save = Save.instance;
+    save.options.playMissSound = value;
+    save.flush();
+    return value;
+  }
+
+  /**
    * FPS
    * @default `60`
    */

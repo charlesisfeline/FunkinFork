@@ -101,9 +101,17 @@ class PreferencesMenu extends Page
     createPrefItemCheckbox('Downscroll', 'If enabled, this will make the notes move downwards.', function(value:Bool):Void {
       Preferences.downscroll = value;
     }, Preferences.downscroll);
-    createPrefItemPercentage('Strumline Background', 'Give the strumline a semi-transparent background', function(value:Int):Void {
-      Preferences.strumlineBackgroundOpacity = value;
-    }, Preferences.strumlineBackgroundOpacity);
+    createPrefItemCheckbox('Note Highlights',
+      'If enabled, this will show a highlight effect while hitting a note. (If disabled, givin off that kade vibes i think)', function(value:Bool):Void {
+        Preferences.noteHighlights = value;
+    }, Preferences.noteHighlights);
+    createPrefItemCheckbox('Note Splashes', 'If enabled, this will show a splash particle effect when hitting a note.', function(value:Bool):Void {
+      Preferences.noteSplashes = value;
+    }, Preferences.noteSplashes);
+    createPrefItemPercentage('Strumline Background', 'Give the strumline a semi-transparent background (also known as a lane underlay)',
+      function(value:Int):Void {
+        Preferences.strumlineBackgroundOpacity = value;
+      }, Preferences.strumlineBackgroundOpacity);
     createPrefItemCheckbox('Flashing Lights', 'If disabled, it will dampen flashing effects. Useful for people with photosensitive epilepsy.',
       function(value:Bool):Void {
         Preferences.flashingLights = value;
@@ -111,6 +119,9 @@ class PreferencesMenu extends Page
     createPrefItemCheckbox('Camera Zooms', 'If disabled, camera stops bouncing to the song.', function(value:Bool):Void {
       Preferences.zoomCamera = value;
     }, Preferences.zoomCamera);
+    createPrefItemCheckbox('Miss Sounds', 'If disabled, miss sounds will not play when missing notes.', function(value:Bool):Void {
+      Preferences.playMissSound = value;
+    }, Preferences.playMissSound);
     createPrefItemCheckbox('Debug Display', 'If enabled, FPS and other debug stats will be displayed.', function(value:Bool):Void {
       Preferences.debugDisplay = value;
     }, Preferences.debugDisplay);

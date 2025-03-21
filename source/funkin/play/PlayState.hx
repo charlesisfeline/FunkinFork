@@ -932,7 +932,7 @@ class PlayState extends MusicBeatSubState
       {
         Conductor.instance.formatOffset = 0.0;
       }
-      
+
       // Pass the music time instead if the pitch is different, aka, the song is lower or faster
       Conductor.instance.update((FlxG.sound.music.pitch != 1) ? FlxG.sound.music.time + elapsed * 1000 : (Conductor.instance.songPosition + elapsed * 1000),
         false); // Normal conductor update.
@@ -2740,6 +2740,8 @@ class PlayState extends MusicBeatSubState
     if (event.doesNotesplash) playerStrumline.playNoteSplash(note.noteData.getDirection());
     if (note.isHoldNote && note.holdNoteSprite != null) playerStrumline.playNoteHoldCover(note.holdNoteSprite);
     vocals.playerVolume = 1;
+    if (Preferences.playMissSound
+      && (daRating == 'bad' || daRating == 'shit')) FunkinSound.playOnce(Paths.soundRandom('badnoise', 1, 3), FlxG.random.float(0.25, 0.35));
 
     // Display the combo meter and add the calculation to the score.
     applyScore(event.score, event.judgement, event.healthChange, event.isComboBreak);
@@ -2798,7 +2800,7 @@ class PlayState extends MusicBeatSubState
     if (playSound)
     {
       if (!currentStage.getBoyfriend().tempVocals) vocals.playerVolume = 0;
-      FunkinSound.playOnce(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.5, 0.6));
+      if (Preferences.playMissSound) FunkinSound.playOnce(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.5, 0.6));
     }
   }
 
@@ -2853,7 +2855,7 @@ class PlayState extends MusicBeatSubState
     if (event.playSound)
     {
       if (!currentStage.getBoyfriend().tempVocals) vocals.playerVolume = 0;
-      FunkinSound.playOnce(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
+      if (Preferences.playMissSound) FunkinSound.playOnce(Paths.soundRandom('missnote', 1, 3), FlxG.random.float(0.1, 0.2));
     }
   }
 
