@@ -96,6 +96,7 @@ class Save
           vsync: false,
           naughtyness: true,
           downscroll: false,
+          playMissSound: true,
           flashingLights: true,
           zoomCamera: true,
           debugDisplay: true,
