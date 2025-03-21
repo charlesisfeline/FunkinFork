@@ -7,7 +7,7 @@ repo = "Funkin"
 
 # To bypass "you have reached your rate limit!", you can input a github token either as an environment variable
 # or alongside the `git cliff` command like so `git cliff --github-token TOKEN_HERE`
-# Personally I like to use the github cli `gh` tool to get a token
+# Personally, I like to use the github cli `gh` tool to get a token
 # `git cliff --github-token $(gh auth token)`
 
 [changelog]
