@@ -5,7 +5,6 @@ import hxdiscord_rpc.Discord;
 import hxdiscord_rpc.Types;
 import sys.thread.Thread;
 
-@:nullSafety
 class DiscordClient
 {
   static final CLIENT_ID:String = "816168432860790794";
