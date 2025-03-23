@@ -196,7 +196,7 @@ class FocusCameraSongEvent extends SongEvent
       {
         name: 'ease',
         title: 'Easing Type',
-        defaultValue: 'linear',
+        defaultValue: 'CLASSIC',
         type: SongEventFieldType.ENUM,
         keys: [
           'Linear' => 'linear',

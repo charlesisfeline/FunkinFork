@@ -105,7 +105,6 @@ class SongMetadata implements ICloneable<SongMetadata>
     result.looped = this.looped;
     result.playData = this.playData.clone();
     result.generatedBy = this.generatedBy;
-    result.freeplayIcon = this.freeplayIcon;
 
     return result;
   }
