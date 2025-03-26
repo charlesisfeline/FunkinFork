@@ -53,6 +53,8 @@ class ChartEditorImportExportHandler
       if (chartData != null) songChartData.set(variation, chartData);
     }
 
+    if (!songMetadata.exists(state.selectedVariation)) state.selectedVariation = Constants.DEFAULT_VARIATION;
+
     loadSong(state, songMetadata, songChartData, new ChartManifestData(songId));
 
     state.sortChartData();
@@ -127,7 +129,8 @@ class ChartEditorImportExportHandler
    * @param newSongMetadata The song metadata to load.
    * @param newSongChartData The song chart data to load.
    */
-  public static function loadSong(state:ChartEditorState, newSongMetadata:Map<String, SongMetadata>, newSongChartData:Map<String, SongChartData>, ?newSongManifestData:ChartManifestData):Void
+  public static function loadSong(state:ChartEditorState, newSongMetadata:Map<String, SongMetadata>, newSongChartData:Map<String, SongChartData>,
+      ?newSongManifestData:ChartManifestData):Void
   {
     state.songMetadata = newSongMetadata;
     state.songChartData = newSongChartData;
