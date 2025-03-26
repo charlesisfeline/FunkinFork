@@ -253,12 +253,12 @@ class ControlsMenu extends funkin.ui.options.OptionsState.Page
     if (device == Keys)
     {
       prompt.setText('\nPress any key to rebind\n\n\n\n    $cancel to cancel');
-      popup.setText('\nYou cannot unbind\nthat key!\n\n\n\n$cancel to exit');
+      popup.setText('\nYou cannot unbind\nthat key!\n\n\n$cancel to exit');
     }
     else
     {
       prompt.setText('\nPress any button\n   to rebind\n\n\n $cancel to cancel');
-      popup.setText('\nYou cannot unbind\nthat key!\n\n\n$cancel to exit');
+      popup.setText('\nYou cannot unbind\nthat button!\n\n\n$cancel to exit');
     }
 
     controlGrid.selectedItem.select();
@@ -279,7 +279,7 @@ class ControlsMenu extends funkin.ui.options.OptionsState.Page
     var controls = PlayerSettings.player1.controls;
     if (controlGrid.enabled && deviceList != null && deviceListSelected == false && controls.BACK) goToDeviceList();
 
-    if (actionPrevented) createPopup();
+    if (actionPrevented && !popup.exists) createPopup();
 
     if (popup.exists)
     {
